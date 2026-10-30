@@ -132,6 +132,21 @@ main() {
     unzip -oq "$CACHE/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
     fc-cache -f "$HOME/.local/share/fonts/Hack"
 
+    # mihomo: headless-прокси с TUN; подписку кладём руками (финальное сообщение)
+    download https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1.19.33.gz \
+        132f6f3edf9a65e62f04853aed3358472e0b2b7666daa8419edfa2ddf5bb6323 "$CACHE/mihomo.gz"
+    gunzip -c "$CACHE/mihomo.gz" > "$CACHE/mihomo"
+    sudo install -m 755 "$CACHE/mihomo" /usr/local/bin/mihomo
+    download https://github.com/MetaCubeX/metacubexd/releases/download/v1.273.1/compressed-dist.tgz \
+        a178e00b67acabcda2dcef00afa90be6a7bb261e466a67dad58c8478d9553603 "$CACHE/metacubexd.tgz"
+    sudo install -d -m 755 /etc/mihomo/ui /etc/mihomo/providers
+    sudo tar -xzf "$CACHE/metacubexd.tgz" -C /etc/mihomo/ui
+    if [[ ! -s "$HOME/.config/mihomo/subscription-url" ]]; then
+        echo "bootstrap: подписки нет - позже запусти ~/dotfiles-fedora/scripts/mihomo-apply.sh" >&2
+    else
+        "$REPOSITORY/scripts/mihomo-apply.sh"
+    fi
+
     # pi: runtime в ~/.local, конфиг в ~/.pi/agent
     npm install --global --prefix "$HOME/.local" --ignore-scripts @earendil-works/pi-coding-agent@1.3.0
     clone_repository https://github.com/s3nn1k/pi-agent.git "$HOME/.pi/agent"
@@ -160,7 +175,8 @@ main() {
     # Что осталось сделать руками
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
         "Pi запускается на хосте командой pi; контейнер не настраивается." \
-        "Авторизацию pi и внешние репозитории из его settings.json подключи отдельно."
+        "Авторизацию pi и внешние репозитории из его settings.json подключи отдельно." \
+        "VPN: подписка в ~/.config/mihomo/subscription-url, запуск scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
