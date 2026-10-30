@@ -132,11 +132,6 @@ main() {
     unzip -oq "$CACHE/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
     fc-cache -f "$HOME/.local/share/fonts/Hack"
 
-    # Throne: VPN-клиент (без подписки, TUN и автозапуска)
-    download https://github.com/throneproj/Throne/releases/download/1.3.2/Throne-1.3.2-fedora-amd64-system-qt.rpm \
-        2cb6d5bb0febd95a17063183e0d9bc999f68b8f8bcda255fcdd6936911fcaf22 "$CACHE/Throne.rpm"
-    sudo dnf install -y "$CACHE/Throne.rpm"
-
     # pi: runtime в ~/.local, конфиг в ~/.pi/agent
     npm install --global --prefix "$HOME/.local" --ignore-scripts @earendil-works/pi-coding-agent@1.3.0
     clone_repository https://github.com/s3nn1k/pi-agent.git "$HOME/.pi/agent"
@@ -164,7 +159,6 @@ main() {
 
     # Что осталось сделать руками
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
-        "Throne установлен без подписки, TUN и автозапуска." \
         "Pi запускается на хосте командой pi; контейнер не настраивается." \
         "Авторизацию pi и внешние репозитории из его settings.json подключи отдельно."
 }
