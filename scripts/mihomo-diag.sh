@@ -6,6 +6,11 @@ output="${1:-/tmp/mihomo-diag.txt}"
 
 section(){ printf '\n===== %s =====\n' "$1"; }
 
+if [ "$(systemctl is-active mihomo)" != active ]; then
+    echo "mihomo-diag: служба mihomo не запущена - вывод будет неполным. Запусти: sudo systemctl start mihomo" >&2
+    exit 1
+fi
+
 collect(){
     section "service status"
     systemctl is-active mihomo; systemctl show mihomo -p MainPID,ExecStart --no-pager
