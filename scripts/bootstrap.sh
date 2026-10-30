@@ -104,6 +104,22 @@ main() {
         | if length == 1 then .[0] else error("expected one active eDP output") end
     ')" || { echo "bootstrap: нужен один активный eDP-экран; запусти из Sway" >&2; return 1; }
 
+    # Конфиги репозитория -> симлинки; имя экрана -> sway/output.conf
+    set_output_name "$REPOSITORY" "$output"
+    local name
+    for name in sway/config sway/desktop.conf sway/output.conf foot/foot.ini \
+        gtk-3.0/settings.ini gtk-4.0/settings.ini; do
+        link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
+    done
+    link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
+    link_config "$REPOSITORY/zprofile" "$HOME/.zprofile"
+    link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
+
+    # Валидация и применение: рабочий стол оживает до загрузок
+    sway -C -c "$CONFIGURATION_HOME/sway/config"
+    foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
+    swaymsg reload
+
     # Промпт: oh-my-posh
     download https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v31.9.1/posh-linux-amd64 \
         574074a4e84797180e0bda0d133da5f01fbda89ecdb450134c7e566b9a389212 "$CACHE/oh-my-posh"
@@ -133,34 +149,18 @@ main() {
     # Инициализация Neovim: зависимости и плагины
     "$CONFIGURATION_HOME/nvim/init.sh"
 
-    # Конфиги репозитория -> симлинки; имя экрана -> sway/output.conf
-    set_output_name "$REPOSITORY" "$output"
-    local name
-    for name in sway/config sway/desktop.conf sway/output.conf foot/foot.ini \
-        gtk-3.0/settings.ini gtk-4.0/settings.ini; do
-        link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
-    done
-    link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
-    link_config "$REPOSITORY/zprofile" "$HOME/.zprofile"
-    link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
-
-    # Валидация: конфиги Sway и foot
-    sway -C -c "$CONFIGURATION_HOME/sway/config"
-    foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
-
     # GRUB: скрытое меню + пересборка конфига загрузчика
     configure_grub
     sudo restorecon /etc/default/grub
     sudo grub2-editenv - list | grep -q menu_auto_hide && sudo grub2-editenv - unset menu_auto_hide
     sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
-    # Zsh как shell по умолчанию и перезагрузка Sway
+    # Zsh как shell по умолчанию
     local shell
     shell="$(command -v zsh)"
     if [[ "$(getent passwd "$(id -un)" | cut -d: -f7)" != "$shell" ]]; then
         chsh -s "$shell"
     fi
-    swaymsg reload
 
     # Что осталось сделать руками
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
