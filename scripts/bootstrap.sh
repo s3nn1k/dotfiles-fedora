@@ -183,22 +183,16 @@ main() {
         chsh -s "$shell"
     fi
 
-    # keyd: nova-42 на встроенной клавиатуре; id клавиатуры кладём руками (финальное сообщение)
     sudo dnf -y copr enable alternateved/keyd
     sudo dnf install -y keyd
-    mkdir -p "$HOME/.config/keyd"
-    if [[ ! -s "$HOME/.config/keyd/ids" ]]; then
-        echo "bootstrap: id клавиатуры нет - позже запусти ~/dotfiles-fedora/scripts/keyd-apply.sh" >&2
-    else
-        "$REPOSITORY/scripts/keyd-apply.sh"
-    fi
+    clone_repository https://github.com/s3nn1k/keyd-cfqv8.git "$HOME/projects/personal/keyd-cfqv8"
+    sudo "$HOME/projects/personal/keyd-cfqv8/apply.sh"
 
     # Что осталось сделать руками
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
         "Pi запускается на хосте командой pi; контейнер не настраивается." \
         "Авторизацию pi и внешние репозитории из его settings.json подключи отдельно." \
-        "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui." \
-        "Keyd: id клавиатуры из sudo keyd monitor в ~/.config/keyd/ids, запуск scripts/keyd-apply.sh."
+        "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
