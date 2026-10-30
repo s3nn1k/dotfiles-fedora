@@ -132,7 +132,7 @@ main() {
     unzip -oq "$CACHE/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
     fc-cache -f "$HOME/.local/share/fonts/Hack"
 
-    # mihomo: headless-прокси с TUN; подписку кладём руками (финальное сообщение)
+    # mihomo: headless-прокси с TUN; подписка запрашивается интерактивно
     download https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1.19.33.gz \
         132f6f3edf9a65e62f04853aed3358472e0b2b7666daa8419edfa2ddf5bb6323 "$CACHE/mihomo.gz"
     gunzip -c "$CACHE/mihomo.gz" > "$CACHE/mihomo"
@@ -141,10 +141,21 @@ main() {
         a178e00b67acabcda2dcef00afa90be6a7bb261e466a67dad58c8478d9553603 "$CACHE/metacubexd.tgz"
     sudo install -d -m 755 /etc/mihomo/ui /etc/mihomo/providers
     sudo tar -xzf "$CACHE/metacubexd.tgz" -C /etc/mihomo/ui
+    mkdir -p "$HOME/.config/mihomo"
+    local subscription_url
     if [[ ! -s "$HOME/.config/mihomo/subscription-url" ]]; then
-        echo "bootstrap: подписки нет - позже запусти ~/dotfiles-fedora/scripts/mihomo-apply.sh" >&2
-    else
+        read -r -s -p "Подписка VPN (https-ссылка, Enter - пропустить): " subscription_url
+        echo
+        if [[ -n "$subscription_url" ]]; then
+            [[ "$subscription_url" == https://* ]] || { echo "bootstrap: подписка должна начинаться с https://" >&2; return 1; }
+            printf '%s\n' "$subscription_url" > "$HOME/.config/mihomo/subscription-url"
+            chmod 600 "$HOME/.config/mihomo/subscription-url"
+        fi
+    fi
+    if [[ -s "$HOME/.config/mihomo/subscription-url" ]]; then
         "$REPOSITORY/scripts/mihomo-apply.sh"
+    else
+        echo "bootstrap: подписки нет - позже запусти ~/dotfiles-fedora/scripts/mihomo-apply.sh" >&2
     fi
 
     # pi: runtime в ~/.local, конфиг в ~/.pi/agent
@@ -186,7 +197,7 @@ main() {
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
         "Pi запускается на хосте командой pi; контейнер не настраивается." \
         "Авторизацию pi и внешние репозитории из его settings.json подключи отдельно." \
-        "VPN: подписка в ~/.config/mihomo/subscription-url, запуск scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui." \
+        "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui." \
         "Keyd: id клавиатуры из sudo keyd monitor в ~/.config/keyd/ids, запуск scripts/keyd-apply.sh."
 }
 
