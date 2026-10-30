@@ -7,3 +7,5 @@ source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
 
+alias kb-nova='sudo systemctl start keyd'
+alias kb-std='sudo systemctl stop keyd'
