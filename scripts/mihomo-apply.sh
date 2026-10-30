@@ -35,4 +35,6 @@ trap - EXIT
 sudo install -m 644 "$REPOSITORY/mihomo/mihomo.service" /etc/systemd/system/mihomo.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now mihomo
+# Кэш провайдера чистим: смена подписки применяется сразу
+sudo rm -f /etc/mihomo/providers/subscription.yaml
 sudo systemctl restart mihomo
