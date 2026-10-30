@@ -1,0 +1,3 @@
+include /etc/sway/config
+include desktop.conf
+include output.conf

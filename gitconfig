@@ -1,0 +1,12 @@
+[init]
+    defaultBranch = main
+[user]
+    useConfigOnly = true
+[include]
+    path = ~/credentials/git/gitconfig
+[alias]
+    pu = !git push -u origin $(git rev-parse --abbrev-ref HEAD)
+    puf = !git push -u --force origin $(git rev-parse --abbrev-ref HEAD)
+    pul = !git pull origin $(git rev-parse --abbrev-ref HEAD)
+    co = checkout
+    br = branch
