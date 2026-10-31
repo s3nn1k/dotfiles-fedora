@@ -395,7 +395,8 @@ main() {
     # Конфиги репозитория -> симлинки; имя экрана -> sway/output.conf
     set_output_name "$REPOSITORY" "$output"
     local name
-    for name in sway/config sway/desktop.conf sway/output.conf foot/foot.ini \
+    for name in sway/config sway/desktop.conf sway/output.conf \
+        sway/background.conf swaylock/config foot/foot.ini \
         gtk-3.0/settings.ini gtk-4.0/settings.ini; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
     done

@@ -1,3 +1,4 @@
 include /etc/sway/config
 include desktop.conf
 include output.conf
+include background.conf
