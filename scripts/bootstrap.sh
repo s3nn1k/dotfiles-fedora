@@ -8,6 +8,7 @@ export PATH="$HOME/.local/bin:$PATH"
 export GOBIN="$HOME/.local/bin"
 CACHE="$HOME/.cache/dotfiles-fedora"
 CONFIGURATION_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+LOCAL_BIN="$HOME/.local/bin"
 
 # Проверки: Fedora Sway x86_64, обычный пользователь, GRUB
 require_fedora() {
@@ -36,19 +37,34 @@ download() {
     mv "$destination.part" "$destination"
 }
 
-# Симлинк из репозитория в $HOME; чужой существующий файл не трогаем
+# Симлинк из репозитория в $HOME; чужой существующий путь не трогаем
 link_config() {
-    local source="$1" destination="$2"
+    local source="$1" destination="$2" resolved_source resolved_destination
     [[ -f "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
+    resolved_source="$(readlink -f "$source")" || {
+        echo "bootstrap: не удалось разрешить источник $source" >&2
+        return 1
+    }
     if [[ -L "$destination" ]]; then
-        [[ "$(readlink -f "$destination")" == "$(readlink -f "$source")" ]] && return
-        rm "$destination"
+        resolved_destination="$(readlink -f "$destination")" || {
+            echo "bootstrap: $destination неразрешимая ссылка; перенеси вручную и повтори" >&2
+            return 1
+        }
+        [[ "$resolved_destination" == "$resolved_source" ]] && return
+        echo "bootstrap: $destination не наш симлинк; перенеси вручную и повтори" >&2
+        return 1
     elif [[ -e "$destination" ]]; then
-        echo "bootstrap: $destination существует и не наш симлинк - разреши вручную" >&2
+        echo "bootstrap: $destination существует; перенеси вручную и повтори" >&2
         return 1
     fi
     mkdir -p "$(dirname "$destination")"
-    ln -s "$(readlink -f "$source")" "$destination"
+    ln -s "$resolved_source" "$destination"
+}
+
+install_command() {
+    local source="$1" name="$2"
+    link_config "$source" "$LOCAL_BIN/$name" || return 1
+    echo "command: $LOCAL_BIN/$name -> $source"
 }
 
 # Записать фактическое имя встроенного экрана в sway/output.conf
@@ -68,17 +84,47 @@ configure_grub() {
     sudo grep -qE '^GRUB_TIMEOUT=' "$path" || echo 'GRUB_TIMEOUT=1' | sudo tee -a "$path" >/dev/null
 }
 
-# Клонировать мой репозиторий; существующий с тем же origin не трогаем
+gh_auth_login() {
+    local temporary_git_config login_status
+    temporary_git_config="$(mktemp "${TMPDIR:-/tmp}/dotfiles-fedora-gh.XXXXXX")"
+    if GIT_CONFIG_GLOBAL="$temporary_git_config" gh auth login --git-protocol https; then
+        rm -f "$temporary_git_config"
+        return 0
+    else
+        login_status=$?
+        rm -f "$temporary_git_config" || return 1
+        return "$login_status"
+    fi
+}
+
 clone_repository() {
-    local url="$1" destination="$2"
+    local url="$1" destination="$2" origin working_tree_status
     if [[ -e "$destination" || -L "$destination" ]]; then
-        [[ -d "$destination/.git" && "$(git -C "$destination" remote get-url origin)" == "$url" ]] || {
-            echo "bootstrap: неожиданный каталог или origin: $destination" >&2
+        [[ -d "$destination/.git" ]] || {
+            echo "bootstrap: unexpected directory: $destination" >&2
             return 1
         }
+        origin="$(git -C "$destination" remote get-url origin)" || {
+            echo "bootstrap: cannot read origin: $destination" >&2
+            return 1
+        }
+        [[ "$origin" == "$url" ]] || {
+            echo "bootstrap: unexpected origin for $destination: $origin" >&2
+            return 1
+        }
+        working_tree_status="$(git -C "$destination" status --porcelain)" || {
+            echo "bootstrap: cannot read status: $destination" >&2
+            return 1
+        }
+        if [[ -n "$working_tree_status" ]]; then
+            echo "bootstrap: existing repository has local changes; skipped: $destination" >&2
+        else
+            echo "bootstrap: existing repository; skipped: $destination"
+        fi
     else
         mkdir -p "$(dirname "$destination")"
         git clone "$url" "$destination"
+        echo "cloned:  $destination"
     fi
 }
 
@@ -92,6 +138,11 @@ main() {
         python3 pipx uv neovim ripgrep fd-find wl-clipboard \
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
         fontconfig google-noto-sans-fonts unzip
+
+    if ! gh auth status >/dev/null 2>&1; then
+        echo "gh: не авторизован — вход через HTTPS"
+        gh_auth_login
+    fi
 
     # Каталоги для ручных установок; Node 22.19+ нужен pi
     mkdir -p "$CACHE" "$HOME/.local/bin"
@@ -119,6 +170,36 @@ main() {
     sway -C -c "$CONFIGURATION_HOME/sway/config"
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
     swaymsg reload
+
+    mkdir -p "$LOCAL_BIN"
+    install_command "$REPOSITORY/scripts/credentials-setup.sh" credentials-setup
+    install_command "$REPOSITORY/scripts/git-crypt-repo.sh" git-crypt-repo
+    install_command "$REPOSITORY/scripts/git-crypt-repo.sh" git-crypt-textconv
+    install_command "$REPOSITORY/scripts/git-cred-read.sh" git-cred-read
+    link_config "$LOCAL_BIN/git-crypt-repo" "$HOME/.local/share/git-crypt/hooks/pre-commit"
+    link_config "$REPOSITORY/systemd/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
+    systemctl --user daemon-reload
+    systemctl --user enable --now ssh-agent.service
+
+    CREDENTIALS="$HOME/credentials"
+    clone_repository https://github.com/s3nn1k/credentials.git "$CREDENTIALS"
+
+    mkdir -p "$HOME/projects/work"
+    local repository_entry repository_url destination
+    PERSONAL_REPOSITORIES=(
+        "https://github.com/s3nn1k/nova-42|$HOME/projects/personal/nova-42"
+        "https://github.com/s3nn1k/ci-cd.git|$HOME/projects/personal/ci-cd"
+        "https://github.com/s3nn1k/go-service-template.git|$HOME/projects/personal/go-service-template"
+        "https://github.com/s3nn1k/nkp.git|$HOME/projects/personal/nkp"
+        "https://github.com/s3nn1k/keyd-cfqv8.git|$HOME/projects/personal/keyd-cfqv8"
+    )
+    for repository_entry in "${PERSONAL_REPOSITORIES[@]}"; do
+        repository_url="${repository_entry%%|*}"
+        destination="${repository_entry#*|}"
+        clone_repository "$repository_url" "$destination"
+    done
+    NKP="$HOME/projects/personal/nkp"
+    make -C "$NKP" install
 
     # Промпт: oh-my-posh
     download https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v31.9.1/posh-linux-amd64 \
@@ -185,14 +266,22 @@ main() {
 
     sudo dnf -y copr enable alternateved/keyd
     sudo dnf install -y keyd
-    clone_repository https://github.com/s3nn1k/keyd-cfqv8.git "$HOME/projects/personal/keyd-cfqv8"
+
     sudo "$HOME/projects/personal/keyd-cfqv8/apply.sh"
 
-    # Что осталось сделать руками
+    clone_repository https://github.com/s3nn1k/obsidian-config.git "$CONFIGURATION_HOME/obsidian"
+    for vault_name in personal work; do
+        VAULT="$HOME/vaults/$vault_name"
+        mkdir -p "$(dirname "$VAULT")"
+        clone_repository "https://github.com/s3nn1k/obsidian-$vault_name.git" "$VAULT"
+    done
+    # Регистрация vault выполняется через GUI Flatpak-версии Obsidian.
+
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
-        "Pi запускается на хосте командой pi; контейнер не настраивается." \
-        "Авторизацию pi и внешние репозитории из его settings.json подключи отдельно." \
-        "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
+        "manual steps:" \
+        "  1. после ручной работы с nkp: ~/dotfiles-fedora/scripts/setup-secrets.sh (подключит auth.json и mcp.json из ~/credentials/pi при наличии)" \
+        "  2. токены агента: ~/credentials/agents-credentials/git-credentials (подключи нужные токены)" \
+        "  3. VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

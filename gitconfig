@@ -2,8 +2,20 @@
     defaultBranch = main
 [user]
     useConfigOnly = true
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
 [include]
-    path = ~/credentials/git/gitconfig
+    path = ~/.config/git/credentials.gitconfig
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential
+[credential "https://gitlab.com"]
+    helper =
+    helper = !$HOME/.local/bin/git-cred-read
+[credential "https://gitlab.pinkzone.dev"]
+    helper =
+    helper = !$HOME/.local/bin/git-cred-read
 [alias]
     pu = !git push -u origin $(git rev-parse --abbrev-ref HEAD)
     puf = !git push -u --force origin $(git rev-parse --abbrev-ref HEAD)
