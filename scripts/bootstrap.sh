@@ -378,7 +378,7 @@ main() {
 
     # Системные пакеты Fedora: git, shell, редактор, языки, утилиты, шрифты
     sudo dnf install -y git git-crypt gh curl jq make gcc gcc-c++ golang nodejs npm \
-        python3 pipx uv neovim ripgrep fd-find wl-clipboard \
+        python3 pipx uv neovim ripgrep fd-find wl-clipboard acl \
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
         fontconfig google-noto-sans-fonts unzip
 
@@ -492,6 +492,7 @@ main() {
     sudo dnf install -y keyd
 
     sudo "$HOME/projects/personal/keyd-cfqv8/apply.sh"
+    "$HOME/projects/personal/keyd-cfqv8/scripts/xremap-apply.sh"
 
     clone_repository https://github.com/s3nn1k/obsidian-config.git "$CONFIGURATION_HOME/obsidian"
     for vault_name in personal work; do
@@ -503,10 +504,8 @@ main() {
     # Регистрация vault выполняется через GUI Flatpak-версии Obsidian.
 
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
-        "manual steps:" \
-        "  1. после ручной работы с nkp: ~/dotfiles-fedora/scripts/setup-secrets.sh unlock (подключит auth.json и mcp.json из ~/credentials/pi при наличии)" \
-        "  2. токены агента: ~/credentials/agents-credentials/git-credentials (подключи нужные токены)" \
-        "  3. VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
+        "Дальше: открой nkp, достань ключи и запусти scripts/setup-secrets.sh unlock." \
+        "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
