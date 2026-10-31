@@ -14,4 +14,9 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ~/dotfiles-fedora/scripts/bootstrap.sh
 ```
 
-Скрипт идемпотентен, спросит sudo-пароль.
+Скрипт идемпотентен, спросит sudo-пароль. Существующие репозитории проверяются и пропускаются; обновляй их вручную.
+
+После ручной работы с ключом в nkp:
+```bash
+~/dotfiles-fedora/scripts/setup-secrets.sh
+```

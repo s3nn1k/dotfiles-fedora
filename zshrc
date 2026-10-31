@@ -1,4 +1,6 @@
 source "$HOME/.zprofile"
+export NKP_VAULT="$HOME/credentials/nkp"
+[ -f "$HOME/credentials/ssh/wrapper.zsh" ] && source "$HOME/credentials/ssh/wrapper.zsh"
 eval "$(oh-my-posh init zsh --config "${XDG_CONFIG_HOME:-$HOME/.config}/zenwritten_dark/zenwritten_dark.omp.json")"
 autoload -Uz compinit
 compinit

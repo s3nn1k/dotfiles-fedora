@@ -1,4 +1,4 @@
 .PHONY: lint
 lint:
-	bash -n scripts/bootstrap.sh
+	bash -n scripts/*.sh
 	zsh -n zshrc zprofile
