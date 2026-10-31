@@ -302,6 +302,15 @@ install_metacubexd() {
     sudo tar -xzf "$CACHE/metacubexd.tgz" -C /etc/mihomo/ui
 }
 
+# Эквивалентность https-URL клона независимо от суффикса .git и хвостового /
+normalize_git_url() {
+    local url="$1"
+    url="${url%/}"
+    url="${url%.git}"
+    printf '%s
+' "$url"
+}
+
 clone_repository() {
     local url="$1" destination="$2" origin working_tree_status
     if [[ -e "$destination" || -L "$destination" ]]; then
@@ -313,7 +322,7 @@ clone_repository() {
             echo "bootstrap: cannot read origin: $destination" >&2
             return 1
         }
-        [[ "$origin" == "$url" ]] || {
+        [[ "$(normalize_git_url "$origin")" == "$(normalize_git_url "$url")" ]] || {
             echo "bootstrap: unexpected origin for $destination: $origin" >&2
             return 1
         }
