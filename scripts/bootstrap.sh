@@ -51,8 +51,12 @@ link_config() {
             return 1
         }
         [[ "$resolved_destination" == "$resolved_source" ]] && return
-        echo "bootstrap: $destination не наш симлинк; перенеси вручную и повтори" >&2
-        return 1
+        if [[ "$resolved_destination" == "$REPOSITORY"/* ]]; then
+            rm "$destination"
+        else
+            echo "bootstrap: $destination не наш симлинк; перенеси вручную и повтори" >&2
+            return 1
+        fi
     elif [[ -e "$destination" ]]; then
         echo "bootstrap: $destination существует; перенеси вручную и повтори" >&2
         return 1
