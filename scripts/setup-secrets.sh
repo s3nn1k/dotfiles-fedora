@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Unlock cloned git-crypt repositories and connect their runtime links.
+# Unlock or link cloned git-crypt repositories and wire their runtime links.
 set -euo pipefail
 
 export PATH="$HOME/.local/bin:$PATH"
@@ -52,44 +52,60 @@ link_safely() {
     }
 }
 
-command -v make >/dev/null 2>&1 || fail "make is required"
-for repository in "${REPOSITORIES[@]}"; do
-    [[ -d "$repository" ]] || fail "repository is missing: $repository"
-    [[ -e "$repository/.git" ]] || fail "git metadata is missing: $repository"
-    [[ -f "$repository/Makefile" ]] || fail "Makefile is missing: $repository"
-done
-for helper in "$GIT_CRYPT_REPO" "$GIT_CRYPT_TEXTCONV" "$GIT_CRED_READ" "$CREDENTIALS_SETUP"; do
-    [[ -x "$helper" ]] || fail "helper is missing or not executable: $helper"
-done
-[[ -d "$OBSIDIAN_CONFIG" ]] || fail "Obsidian config is missing: $OBSIDIAN_CONFIG"
-validate_link_destination "$CREDENTIALS/git/gitconfig" "$RUNTIME_GITCONFIG"
-for repository_index in 1 2; do
-    vault="${REPOSITORIES[$repository_index]}"
-    destination="$vault/.obsidian"
-    if [[ -L "$destination" ]]; then
-        if [[ "$(readlink "$destination")" != "$OBSIDIAN_CONFIG" ]]; then
-            fail "refusing to replace existing symlink: $destination"
-        fi
-    elif [[ -e "$destination" ]]; then
-        fail "refusing to replace existing path: $destination"
+# Запертый git-crypt файл начинается с заголовка \0"GITCRYPT", расшифрованный - после unlock
+is_git_crypt_locked() {
+    [[ -f "$1" ]] || return 1
+    printf '\000GITCRYPT' | cmp -s - <(head -c 9 "$1")
+}
+
+command_unlock() {
+    command -v make >/dev/null 2>&1 || fail "make is required"
+    for repository in "${REPOSITORIES[@]}"; do
+        [[ -d "$repository" ]] || fail "repository is missing: $repository"
+        [[ -e "$repository/.git" ]] || fail "git metadata is missing: $repository"
+        [[ -f "$repository/Makefile" ]] || fail "Makefile is missing: $repository"
+    done
+    for helper in "$GIT_CRYPT_REPO" "$GIT_CRYPT_TEXTCONV" "$GIT_CRED_READ"; do
+        [[ -x "$helper" ]] || fail "helper is missing or not executable: $helper"
+    done
+
+    for repository in "${REPOSITORIES[@]}"; do
+        run_make_target "$repository" init
+        run_make_target "$repository" unlock
+    done
+    if [[ ! -f "$CREDENTIALS/git/gitconfig" ]] || is_git_crypt_locked "$CREDENTIALS/git/gitconfig"; then
+        fail "unlocked credentials gitconfig is missing: $CREDENTIALS/git/gitconfig"
     fi
-done
 
-for repository in "${REPOSITORIES[@]}"; do
-    run_make_target "$repository" init
-    run_make_target "$repository" unlock
-    if [[ "$repository" == "$CREDENTIALS" ]]; then
-        if [[ ! -f "$CREDENTIALS/git/gitconfig" ]]; then
-            fail "unlocked credentials gitconfig is missing: $CREDENTIALS/git/gitconfig"
+    command_link
+    echo "setup-secrets: credentials and vaults unlocked"
+}
+
+command_link() {
+    if [[ -d "$CREDENTIALS" ]]; then
+        if [[ -f "$CREDENTIALS/git/gitconfig" ]] && ! is_git_crypt_locked "$CREDENTIALS/git/gitconfig"; then
+            [[ -x "$CREDENTIALS_SETUP" ]] || fail "helper is missing or not executable: $CREDENTIALS_SETUP"
+            run_make_target "$CREDENTIALS" link
+            link_safely "$CREDENTIALS/git/gitconfig" "$RUNTIME_GITCONFIG"
         fi
-        run_make_target "$CREDENTIALS" link
-        link_safely "$CREDENTIALS/git/gitconfig" "$RUNTIME_GITCONFIG"
     fi
-done
 
-for repository_index in 1 2; do
-    vault="${REPOSITORIES[$repository_index]}"
-    link_safely "$OBSIDIAN_CONFIG" "$vault/.obsidian"
-done
+    for repository_index in 1 2; do
+        vault="${REPOSITORIES[$repository_index]}"
+        [[ -d "$vault" && -d "$OBSIDIAN_CONFIG" ]] || continue
+        link_safely "$OBSIDIAN_CONFIG" "$vault/.obsidian"
+    done
+}
 
-echo "setup-secrets: credentials and vaults unlocked"
+case "${1:-}" in
+    unlock)
+        command_unlock
+        ;;
+    link)
+        command_link
+        ;;
+    *)
+        echo "usage: setup-secrets.sh {unlock|link}" >&2
+        exit 1
+        ;;
+esac

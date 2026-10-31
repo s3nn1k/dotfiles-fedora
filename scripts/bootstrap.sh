@@ -311,8 +311,32 @@ normalize_git_url() {
 ' "$url"
 }
 
+# Существующий клон: git pull --ff-only; расхождение с origin - громкий стоп
+update_repository() {
+    local destination="$1" pull_output attempt
+    for attempt in 1 2 3; do
+        if pull_output="$(LC_ALL=C git -C "$destination" pull --ff-only 2>&1)"; then
+            echo "updated:  $destination"
+            return 0
+        fi
+        if printf '%s\n' "$pull_output" | grep -q 'would be overwritten by merge\|cannot pull with rebase\|Please commit your changes'; then
+            echo "bootstrap: pull пропущен, локальные изменения не тронуты: $destination" >&2
+            return 0
+        fi
+        if printf '%s\n' "$pull_output" | grep -qi 'not possible to fast-forward\|divergent branches'; then
+            echo "bootstrap: $destination разошёлся с origin; разрули вручную и перезапусти" >&2
+            return 1
+        fi
+        echo "bootstrap: pull не прошёл (попытка $attempt): $destination" >&2
+        [[ "$attempt" == 3 ]] && break
+        sleep 3
+    done
+    echo "bootstrap: pull не прошёл после повторов; продолжаю с текущим состоянием: $destination" >&2
+    return 0
+}
+
 clone_repository() {
-    local url="$1" destination="$2" origin working_tree_status
+    local url="$1" destination="$2" origin
     if [[ -e "$destination" || -L "$destination" ]]; then
         [[ -d "$destination/.git" ]] || {
             echo "bootstrap: unexpected directory: $destination" >&2
@@ -326,15 +350,7 @@ clone_repository() {
             echo "bootstrap: unexpected origin for $destination: $origin" >&2
             return 1
         }
-        working_tree_status="$(git -C "$destination" status --porcelain)" || {
-            echo "bootstrap: cannot read status: $destination" >&2
-            return 1
-        }
-        if [[ -n "$working_tree_status" ]]; then
-            echo "bootstrap: existing repository has local changes; skipped: $destination" >&2
-        else
-            echo "bootstrap: existing repository; skipped: $destination"
-        fi
+        update_repository "$destination"
     else
         mkdir -p "$(dirname "$destination")"
         local attempt
@@ -389,10 +405,10 @@ main() {
     swaymsg reload
 
     mkdir -p "$LOCAL_BIN"
-    install_command "$REPOSITORY/scripts/credentials-setup.sh" credentials-setup
-    install_command "$REPOSITORY/scripts/git-crypt-repo.sh" git-crypt-repo
-    install_command "$REPOSITORY/scripts/git-crypt-repo.sh" git-crypt-textconv
-    install_command "$REPOSITORY/scripts/git-cred-read.sh" git-cred-read
+    install_command "$REPOSITORY/bin/credentials-setup.sh" credentials-setup
+    install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-repo
+    install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-textconv
+    install_command "$REPOSITORY/bin/git-cred-read.sh" git-cred-read
     link_config "$LOCAL_BIN/git-crypt-repo" "$HOME/.local/share/git-crypt/hooks/pre-commit"
     link_config "$REPOSITORY/systemd/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
     systemctl --user daemon-reload
@@ -478,11 +494,12 @@ main() {
         mkdir -p "$(dirname "$VAULT")"
         clone_repository "https://github.com/s3nn1k/obsidian-$vault_name.git" "$VAULT"
     done
+    "$REPOSITORY/scripts/setup-secrets.sh" link
     # Регистрация vault выполняется через GUI Flatpak-версии Obsidian.
 
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
         "manual steps:" \
-        "  1. после ручной работы с nkp: ~/dotfiles-fedora/scripts/setup-secrets.sh (подключит auth.json и mcp.json из ~/credentials/pi при наличии)" \
+        "  1. после ручной работы с nkp: ~/dotfiles-fedora/scripts/setup-secrets.sh unlock (подключит auth.json и mcp.json из ~/credentials/pi при наличии)" \
         "  2. токены агента: ~/credentials/agents-credentials/git-credentials (подключи нужные токены)" \
         "  3. VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }

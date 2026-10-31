@@ -17,11 +17,12 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ~/dotfiles-fedora/scripts/bootstrap.sh
 ```
 
-Скрипт идемпотентен, спросит sudo-пароль. Существующие репозитории проверяются и
-пропускаются; обновляй их вручную.
+Скрипт идемпотентен, спросит sudo-пароль. Существующие репозитории обновляются через
+`git pull --ff-only`: локальные правки, задетые upstream, пропускают обновление с
+предупреждением, расхождение с origin останавливает скрипт.
 
 После ручной работы с ключом в nkp:
 
 ```bash
-~/dotfiles-fedora/scripts/setup-secrets.sh
+~/dotfiles-fedora/scripts/setup-secrets.sh unlock
 ```
