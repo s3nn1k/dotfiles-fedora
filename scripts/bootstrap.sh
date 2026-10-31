@@ -337,8 +337,17 @@ clone_repository() {
         fi
     else
         mkdir -p "$(dirname "$destination")"
-        git clone "$url" "$destination"
-        echo "cloned:  $destination"
+        local attempt
+        for attempt in 1 2 3; do
+            if git clone "$url" "$destination"; then
+                echo "cloned:  $destination"
+                return 0
+            fi
+            rm -rf -- "$destination"
+            echo "bootstrap: клон не прошёл (попытка $attempt): $url" >&2
+            [[ "$attempt" == 3 ]] && return 1
+            sleep 3
+        done
     fi
 }
 
