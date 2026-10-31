@@ -384,7 +384,9 @@ main() {
     install_telegram
     install_metacubexd
 
-    if ! gh auth status >/dev/null 2>&1; then
+    if gh auth token --hostname github.com >/dev/null 2>&1; then
+        echo "GitHub авторизация уже настроена"
+    else
         echo "gh: не авторизован — вход через HTTPS"
         gh_auth_login
     fi
