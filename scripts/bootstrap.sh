@@ -137,29 +137,164 @@ install_mihomo() {
     }
 }
 
-install_telegram() {
-    local fedora_version
+install_telegram() (
+    local local_prefix="$HOME/.local/opt/telegram-desktop"
+    local telegram_binary="$local_prefix/Telegram"
+    local telegram_link="$LOCAL_BIN/telegram"
+    local desktop_entry="$HOME/.local/share/applications/telegram-desktop.desktop"
+    local desktop_exec desktop_content staging_directory archive_path cleanup_command
+    local expected_installation=false
 
-    if ! rpm -q rpmfusion-free-release >/dev/null 2>&1; then
-        fedora_version="$(rpm -E %fedora)" || {
-            echo "bootstrap: не удалось определить версию Fedora для RPM Fusion Free" >&2
+    [[ "$HOME" == /* ]] || {
+        echo "bootstrap: HOME должен быть абсолютным путём" >&2
+        return 1
+    }
+    case "$HOME" in
+        *'%'*|*'$'*|*'`'*|*'\'*|*[[:cntrl:]]*)
+            echo "bootstrap: HOME содержит неподдерживаемые символы для ярлыка Telegram" >&2
+            return 1
+            ;;
+    esac
+
+    desktop_exec="${telegram_binary//\\/\\\\}"
+    desktop_exec="${desktop_exec//\"/\\\"}"
+    desktop_exec="\"$desktop_exec\""
+    desktop_content="[Desktop Entry]
+Type=Application
+Name=Telegram
+Exec=$desktop_exec
+Terminal=false
+Categories=Network;InstantMessaging;
+"
+
+    if [[ -L "$local_prefix" ]]; then
+        echo "bootstrap: $local_prefix является чужой ссылкой; перенеси вручную и повтори" >&2
+        return 1
+    elif [[ -e "$local_prefix" ]]; then
+        [[ -d "$local_prefix" && ! -L "$local_prefix" &&
+            -f "$telegram_binary" && ! -L "$telegram_binary" && -x "$telegram_binary" ]] || {
+            echo "bootstrap: $local_prefix не похож на ожидаемую установку; перенеси вручную и повтори" >&2
             return 1
         }
-        [[ "$fedora_version" =~ ^[0-9]+$ ]] || {
-            echo "bootstrap: rpm не вернул числовую версию Fedora" >&2
+        expected_installation=true
+    fi
+
+    if [[ -L "$telegram_link" ]]; then
+        [[ "$expected_installation" == true && "$(readlink "$telegram_link")" == "$telegram_binary" ]] || {
+            echo "bootstrap: $telegram_link уже занят; перенеси вручную и повтори" >&2
             return 1
         }
-        sudo dnf install -y "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_version}.noarch.rpm" || {
-            echo "bootstrap: не удалось подключить RPM Fusion Free" >&2
+    elif [[ -e "$telegram_link" ]]; then
+        echo "bootstrap: $telegram_link уже занят; перенеси вручную и повтори" >&2
+        return 1
+    fi
+
+    if [[ -e "$desktop_entry" || -L "$desktop_entry" ]]; then
+        [[ -f "$desktop_entry" && ! -L "$desktop_entry" ]] || {
+            echo "bootstrap: $desktop_entry уже занят; перенеси вручную и повтори" >&2
+            return 1
+        }
+        cmp -s "$desktop_entry" <(printf '%s' "$desktop_content") || {
+            echo "bootstrap: $desktop_entry уже занят; перенеси вручную и повтори" >&2
             return 1
         }
     fi
 
-    sudo dnf install -y telegram-desktop || {
-        echo "bootstrap: не удалось установить telegram-desktop" >&2
-        return 1
-    }
-}
+    if [[ "$expected_installation" != true ]]; then
+        staging_directory="$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-fedora-telegram.XXXXXX")" || {
+            echo "bootstrap: не удалось создать временный каталог Telegram" >&2
+            return 1
+        }
+        printf -v cleanup_command 'rm -rf -- %q' "$staging_directory"
+        trap "$cleanup_command" EXIT
+        archive_path="$staging_directory/telegram.tar.xz"
+
+        curl --fail --location --show-error --retry 2 --retry-max-time 600 \
+            --connect-timeout 15 --max-time 300 --proto '=https' --proto-redir '=https' \
+            --tlsv1.2 --output "$archive_path" https://telegram.org/dl/desktop/linux || {
+            echo "bootstrap: не удалось скачать официальный Telegram" >&2
+            return 1
+        }
+
+        python3 - "$archive_path" "$staging_directory" <<'PY'
+import posixpath
+import sys
+import tarfile
+
+archive_path, extraction_directory = sys.argv[1:]
+
+
+def fail(message):
+    raise SystemExit(f"bootstrap: {message}")
+
+
+with tarfile.open(archive_path, "r:*") as archive:
+    members = archive.getmembers()
+    seen_paths = set()
+    root_member = None
+    binary_member = None
+
+    for member in members:
+        name = member.name
+        if not name or "\x00" in name or "\\" in name or name.startswith("/"):
+            fail("архив содержит небезопасный путь")
+        normalized_name = posixpath.normpath(name)
+        if normalized_name != name.rstrip("/") or normalized_name == "..":
+            fail("архив содержит путь с обходом каталогов")
+        if normalized_name != "Telegram" and not normalized_name.startswith("Telegram/"):
+            fail("архив содержит путь вне Telegram/")
+        if normalized_name in seen_paths:
+            fail("архив содержит повторяющийся путь")
+        seen_paths.add(normalized_name)
+
+        if member.issym() or member.islnk() or member.isdev():
+            fail("архив содержит ссылку или специальный файл")
+        if not (member.isdir() or member.isreg()):
+            fail("архив содержит неподдерживаемый тип файла")
+
+        if normalized_name == "Telegram":
+            if root_member is not None or not member.isdir():
+                fail("архив не содержит ожидаемый корень Telegram/")
+            root_member = member
+        if normalized_name == "Telegram/Telegram":
+            if binary_member is not None or not member.isreg() or not member.mode & 0o111:
+                fail("архив не содержит исполняемый файл Telegram")
+            binary_member = member
+
+    if root_member is None or binary_member is None:
+        fail("архив не содержит ожидаемую установку Telegram")
+
+    try:
+        archive.extractall(extraction_directory, filter="data")
+    except TypeError:
+        archive.extractall(extraction_directory)
+PY
+
+        [[ -d "$staging_directory/Telegram" && ! -L "$staging_directory/Telegram" &&
+            -f "$staging_directory/Telegram/Telegram" &&
+            ! -L "$staging_directory/Telegram/Telegram" &&
+            -x "$staging_directory/Telegram/Telegram" ]] || {
+            echo "bootstrap: распакованный архив не содержит исполняемый Telegram" >&2
+            return 1
+        }
+        [[ ! -e "$local_prefix" && ! -L "$local_prefix" ]] || {
+            echo "bootstrap: путь установки изменился во время скачивания; повтори" >&2
+            return 1
+        }
+        mkdir -p "$(dirname "$local_prefix")"
+        mv "$staging_directory/Telegram" "$local_prefix"
+    fi
+
+    if [[ ! -L "$telegram_link" && ! -e "$telegram_link" ]]; then
+        mkdir -p "$(dirname "$telegram_link")"
+        ln -s "$telegram_binary" "$telegram_link"
+    fi
+
+    if [[ ! -e "$desktop_entry" && ! -L "$desktop_entry" ]]; then
+        mkdir -p "$(dirname "$desktop_entry")"
+        printf '%s' "$desktop_content" > "$desktop_entry"
+    fi
+)
 
 install_metacubexd() {
     download https://github.com/MetaCubeX/metacubexd/releases/download/v1.273.1/compressed-dist.tgz \
