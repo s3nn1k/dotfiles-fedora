@@ -97,6 +97,76 @@ gh_auth_login() {
     fi
 }
 
+install_mihomo() {
+    local subscription_file="$HOME/.config/mihomo/subscription-url" subscription_url
+
+    download https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1.19.33.gz \
+        132f6f3edf9a65e62f04853aed3358472e0b2b7666daa8419edfa2ddf5bb6323 "$CACHE/mihomo.gz"
+    gunzip -c "$CACHE/mihomo.gz" > "$CACHE/mihomo"
+    sudo install -m 755 "$CACHE/mihomo" /usr/local/bin/mihomo
+    sudo install -d -m 755 /etc/mihomo/ui /etc/mihomo/providers
+    mkdir -p "$(dirname "$subscription_file")"
+
+    if [[ ! -s "$subscription_file" ]]; then
+        if ! read -r -s -p "Подписка VPN (https-ссылка): " subscription_url; then
+            echo
+            echo "bootstrap: подписка обязательна для продолжения" >&2
+            return 1
+        fi
+        echo
+        [[ -n "$subscription_url" ]] || {
+            echo "bootstrap: подписка обязательна для продолжения" >&2
+            return 1
+        }
+        [[ "$subscription_url" == https://* ]] || {
+            echo "bootstrap: подписка должна начинаться с https://" >&2
+            return 1
+        }
+        printf '%s\n' "$subscription_url" > "$subscription_file"
+    fi
+
+    [[ -s "$subscription_file" ]] || {
+        echo "bootstrap: подписка обязательна для продолжения" >&2
+        return 1
+    }
+    chmod 600 "$subscription_file"
+    "$REPOSITORY/scripts/mihomo-apply.sh"
+    sudo systemctl is-active --quiet mihomo || {
+        echo "bootstrap: служба mihomo неактивна" >&2
+        return 1
+    }
+}
+
+install_telegram() {
+    local fedora_version
+
+    if ! rpm -q rpmfusion-free-release >/dev/null 2>&1; then
+        fedora_version="$(rpm -E %fedora)" || {
+            echo "bootstrap: не удалось определить версию Fedora для RPM Fusion Free" >&2
+            return 1
+        }
+        [[ "$fedora_version" =~ ^[0-9]+$ ]] || {
+            echo "bootstrap: rpm не вернул числовую версию Fedora" >&2
+            return 1
+        }
+        sudo dnf install -y "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${fedora_version}.noarch.rpm" || {
+            echo "bootstrap: не удалось подключить RPM Fusion Free" >&2
+            return 1
+        }
+    fi
+
+    sudo dnf install -y telegram-desktop || {
+        echo "bootstrap: не удалось установить telegram-desktop" >&2
+        return 1
+    }
+}
+
+install_metacubexd() {
+    download https://github.com/MetaCubeX/metacubexd/releases/download/v1.273.1/compressed-dist.tgz \
+        a178e00b67acabcda2dcef00afa90be6a7bb261e466a67dad58c8478d9553603 "$CACHE/metacubexd.tgz"
+    sudo tar -xzf "$CACHE/metacubexd.tgz" -C /etc/mihomo/ui
+}
+
 clone_repository() {
     local url="$1" destination="$2" origin working_tree_status
     if [[ -e "$destination" || -L "$destination" ]]; then
@@ -139,14 +209,8 @@ main() {
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
         fontconfig google-noto-sans-fonts unzip
 
-    if ! gh auth status >/dev/null 2>&1; then
-        echo "gh: не авторизован — вход через HTTPS"
-        gh_auth_login
-    fi
-
     # Каталоги для ручных установок; Node 22.19+ нужен pi
     mkdir -p "$CACHE" "$HOME/.local/bin"
-    node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 19)) process.exit(1)'
 
     # Имя встроенного экрана (масштаб 2.25 применяется к нему)
     local output
@@ -181,6 +245,15 @@ main() {
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service
 
+    install_mihomo
+    install_telegram
+    install_metacubexd
+
+    if ! gh auth status >/dev/null 2>&1; then
+        echo "gh: не авторизован — вход через HTTPS"
+        gh_auth_login
+    fi
+
     CREDENTIALS="$HOME/credentials"
     clone_repository https://github.com/s3nn1k/credentials.git "$CREDENTIALS"
 
@@ -213,35 +286,10 @@ main() {
     unzip -oq "$CACHE/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
     fc-cache -f "$HOME/.local/share/fonts/Hack"
 
-    # mihomo: headless-прокси с TUN; подписка запрашивается интерактивно
-    download https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1.19.33.gz \
-        132f6f3edf9a65e62f04853aed3358472e0b2b7666daa8419edfa2ddf5bb6323 "$CACHE/mihomo.gz"
-    gunzip -c "$CACHE/mihomo.gz" > "$CACHE/mihomo"
-    sudo install -m 755 "$CACHE/mihomo" /usr/local/bin/mihomo
-    download https://github.com/MetaCubeX/metacubexd/releases/download/v1.273.1/compressed-dist.tgz \
-        a178e00b67acabcda2dcef00afa90be6a7bb261e466a67dad58c8478d9553603 "$CACHE/metacubexd.tgz"
-    sudo install -d -m 755 /etc/mihomo/ui /etc/mihomo/providers
-    sudo tar -xzf "$CACHE/metacubexd.tgz" -C /etc/mihomo/ui
-    mkdir -p "$HOME/.config/mihomo"
-    local subscription_url
-    if [[ ! -s "$HOME/.config/mihomo/subscription-url" ]]; then
-        read -r -s -p "Подписка VPN (https-ссылка, Enter - пропустить): " subscription_url
-        echo
-        if [[ -n "$subscription_url" ]]; then
-            [[ "$subscription_url" == https://* ]] || { echo "bootstrap: подписка должна начинаться с https://" >&2; return 1; }
-            printf '%s\n' "$subscription_url" > "$HOME/.config/mihomo/subscription-url"
-            chmod 600 "$HOME/.config/mihomo/subscription-url"
-        fi
-    fi
-    if [[ -s "$HOME/.config/mihomo/subscription-url" ]]; then
-        "$REPOSITORY/scripts/mihomo-apply.sh"
-    else
-        echo "bootstrap: подписки нет - позже запусти ~/dotfiles-fedora/scripts/mihomo-apply.sh" >&2
-    fi
-
     # pi: runtime в ~/.local, конфиг в ~/.pi/agent
-    npm install --global --prefix "$HOME/.local" --ignore-scripts @earendil-works/pi-coding-agent@1.3.0
     clone_repository https://github.com/s3nn1k/pi-agent.git "$HOME/.pi/agent"
+    node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 19)) process.exit(1)'
+    npm install --global --prefix "$HOME/.local" --ignore-scripts @earendil-works/pi-coding-agent@1.3.0
     make -C "$HOME/.pi/agent" init
     "$HOME/.local/bin/pi" update --extensions
 
