@@ -39,12 +39,12 @@ close_workspace = "prefix+shift+d"
 
 # --- сессия и сервис ------------------------------------------------------
 help = "prefix+?"
-open_notification_target = "prefix+n"
+open_notification_target = ""
 toggle_sidebar = ""       # collapse не используем: expanded всегда, узко
 detach = "prefix+x"
 
 # --- табы ----------------------------------------------------------------
-new_tab = "prefix+c"
+new_tab = "prefix+n"
 next_tab = "prefix+tab"
 previous_tab = "prefix+shift+tab"
 switch_tab = "prefix+1..9"
