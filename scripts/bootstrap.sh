@@ -37,6 +37,29 @@ download() {
     mv "$destination.part" "$destination"
 }
 
+download_model() {
+    local url="$1" checksum="$2" destination="$3" attempt
+    if [[ -f "$destination" ]] && printf '%s  %s\n' "$checksum" "$destination" | sha256sum --check --status; then
+        return
+    fi
+    if [[ -f "$destination.part" ]] && printf '%s  %s\n' "$checksum" "$destination.part" | sha256sum --check --status; then
+        mv "$destination.part" "$destination"
+        return
+    fi
+    for attempt in 1 2 3; do
+        if curl --fail --http1.1 --location --show-error --continue-at - \
+            --connect-timeout 15 --max-time 1800 \
+            --proto '=https' --tlsv1.2 --output "$destination.part" "$url"; then
+            printf '%s  %s\n' "$checksum" "$destination.part" | sha256sum --check
+            mv "$destination.part" "$destination"
+            return
+        fi
+        echo "bootstrap: загрузка модели не удалась (попытка $attempt): $url" >&2
+        [[ "$attempt" == 3 ]] && return 1
+        sleep 3
+    done
+}
+
 # Симлинк из репозитория в $HOME; чужой существующий путь не трогаем
 link_config() {
     local source="$1" destination="$2" resolved_source resolved_destination
@@ -306,6 +329,30 @@ install_metacubexd() {
     sudo tar -xzf "$CACHE/metacubexd.tgz" -C /etc/mihomo/ui
 }
 
+install_whisper() {
+    local model="$HOME/.local/share/whisper/models/ggml-large-v3-turbo.bin"
+    local source_directory="$CACHE/whisper.cpp-1.9.5" version_file="$LOCAL_BIN/whisper-cli.version"
+    local installed_version=""
+
+    download https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v1.9.5.tar.gz \
+        ff1a9053feb509ff9d7729703355541ae9690073a6b1c40eb692c962e0dc1720 \
+        "$CACHE/whisper.cpp-v1.9.5.tar.gz"
+
+    [[ -f "$version_file" ]] && installed_version="$(cat "$version_file")"
+    if [[ ! -x "$LOCAL_BIN/whisper-cli" || "$installed_version" != "v1.9.5" ]]; then
+        rm -rf "$source_directory"
+        tar -xzf "$CACHE/whisper.cpp-v1.9.5.tar.gz" -C "$CACHE"
+        cmake -S "$source_directory" -B "$source_directory/build" -DBUILD_SHARED_LIBS=OFF
+        cmake --build "$source_directory/build" --config Release -j"$(nproc)"
+        install -m 755 "$source_directory/build/bin/whisper-cli" "$LOCAL_BIN/whisper-cli"
+        printf 'v1.9.5\n' > "$version_file"
+    fi
+
+    mkdir -p "$(dirname "$model")"
+    download_model https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin \
+        1fc70f774d38eb169993ac391eea357ef47c88757ef72ee5943879b7e8e2bc69 "$model"
+}
+
 # Эквивалентность https-URL клона независимо от суффикса .git и хвостового /
 normalize_git_url() {
     local url="$1"
@@ -504,6 +551,10 @@ main() {
     sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo systemctl enable --now docker
     sudo usermod -aG docker "$(id -un)"
+
+    sudo dnf install -y cmake ffmpeg-free yt-dlp
+    install_whisper
+    install_command "$REPOSITORY/bin/wt" wt
 
     clone_repository https://github.com/s3nn1k/obsidian-config.git "$CONFIGURATION_HOME/obsidian"
     for vault_name in personal work; do

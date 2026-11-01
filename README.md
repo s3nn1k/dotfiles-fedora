@@ -39,7 +39,8 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
 
 - `bin/` - команды, которые bootstrap ставит в `~/.local/bin` для других репозиториев:
   credentials-setup (линки и права `~/credentials`), git-crypt-repo (unlock/lock
-  git-crypt-репозиториев), git-cred-read (git credential helper).
+  git-crypt-репозиториев), git-cred-read (git credential helper), wt (транскрибация:
+  ffmpeg + whisper.cpp).
 - `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
   mihomo-apply.sh (конфиг и служба mihomo).
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
