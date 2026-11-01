@@ -377,12 +377,12 @@ main() {
     sudo -v
 
     # Системные пакеты Fedora: git, shell, редактор, языки, утилиты, шрифты
-    sudo dnf install -y git git-crypt gh curl jq make gcc gcc-c++ golang nodejs npm \
+    sudo dnf install -y git git-crypt gh curl jq make gcc gcc-c++ golang \
         python3 pipx uv neovim ripgrep fd-find wl-clipboard acl \
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
         fontconfig google-noto-sans-fonts unzip
+    sudo dnf install -y --allowerasing nodejs24 nodejs24-npm nodejs24-bin nodejs24-npm-bin
 
-    # Каталоги для ручных установок; Node 22.19+ нужен pi
     mkdir -p "$CACHE" "$HOME/.local/bin"
 
     # Имя встроенного экрана (масштаб 2.25 применяется к нему)
