@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+media_file="${1:-}"
+if [[ -z "$media_file" || ! -f "$media_file" ]]; then
+    echo "usage: wt <audio|video> [whisper-cli flags]" >&2
+    exit 1
+fi
+shift
+
+model="$HOME/.local/share/whisper/models/ggml-large-v3-turbo.bin"
+[[ -f "$model" ]] || {
+    echo "wt: model missing ($model) - run ~/dotfiles-fedora/scripts/bootstrap.sh" >&2
+    exit 1
+}
+
+work_directory="$(mktemp -d "${TMPDIR:-/tmp}/wt.XXXXXX")"
+wave_file="$work_directory/wt.wav"
+trap 'rm -rf "$work_directory"' EXIT
+ffmpeg -y -v error -i "$media_file" -ar 16000 -ac 1 -c:a pcm_s16le "$wave_file"
+whisper-cli -m "$model" -f "$wave_file" "$@"
