@@ -44,6 +44,7 @@ toggle_sidebar = ""       # collapse не используем: expanded все�
 detach = "prefix+x"
 
 # --- табы ----------------------------------------------------------------
+new_tab = "prefix+c"
 next_tab = "prefix+tab"
 previous_tab = "prefix+shift+tab"
 switch_tab = "prefix+1..9"
@@ -51,7 +52,6 @@ switch_tab = "prefix+1..9"
 # --- отключено ------------------------------------------------------------
 # zoom/copy_mode/агенты-ряды/последняя панель — на всякий случай погашены,
 # чтобы ничего не сработало случайно
-new_tab = ""
 rename_tab = ""
 close_tab = ""
 move_tab_previous = ""
