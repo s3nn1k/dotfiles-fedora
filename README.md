@@ -41,6 +41,8 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
   credentials-setup (линки и права `~/credentials`), git-crypt-repo (unlock/lock
   git-crypt-репозиториев), git-cred-read (git credential helper), wt (транскрибация:
   ffmpeg + whisper.cpp).
+- `herdr.toml` - конфиг herdr (терминальный менеджер панелей и воркспейсов); bootstrap
+  линкует его в `~/.config/herdr/config.toml`.
 - `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
   mihomo-apply.sh (конфиг и служба mihomo).
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
