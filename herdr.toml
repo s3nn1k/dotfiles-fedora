@@ -3,32 +3,32 @@
 onboarding = false
 
 # --- тема: zenwritten_dark ---------------------------------------------------
-# herdr как продолжение терминала: текст и акценты — точные слоты foot
-# (fg, bright-*), поверхности — производные bg foot #15191f; жёлтый и красный —
-# omp-промпт (foot-жёлтые кислые). Другая тема: сменить name и убрать custom.
+# Оттенки — только палитра zenwritten_dark.omp.json: #608b4e (❯), #e5c07b,
+# #d4d4d4, #f48771. Фон и поверхности — bg foot #15191f и производные:
+# в omp-теме фона нет. Смена темы: сменить name на встроенную и убрать custom.
 [theme]
 name = "terminal" # база для токенов без override: follows ANSI-слотам терминала
 
 [theme.custom]
-text = "#dcdcdc"
-subtext0 = "#c7c7c7"
+text = "#d4d4d4"
+subtext0 = "#d4d4d4"
 surface_dim = "#12161b"
 surface0 = "#1b2027"
 surface1 = "#232931"
 overlay0 = "#4a5261"
-overlay1 = "#686868"
+overlay1 = "#5b6472"
 sidebar_bg = "#15191f"
 active_row_bg = "#232931"
 selection_bg = "#2a3140"
 panel_bg = "#1b2027"
-accent = "#a7abf2"
+accent = "#608b4e"
 red = "#f48771"
-green = "#58e790" # bright-слот foot: статусы читаемее приглушённого #608b4e из omp
+green = "#608b4e"
 yellow = "#e5c07b"
-blue = "#a7abf2"
-teal = "#00c5c7"
-peach = "#dd7975"
-mauve = "#e17ee1"
+blue = "#608b4e"
+teal = "#e5c07b"
+peach = "#f48771"
+mauve = "#e5c07b"
 
 # --- клавиши -------------------------------------------------------------------
 [keys]
