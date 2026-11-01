@@ -353,6 +353,22 @@ install_whisper() {
         1fc70f774d38eb169993ac391eea357ef47c88757ef72ee5943879b7e8e2bc69 "$model"
 }
 
+install_herdr() {
+    download https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64 \
+        14d9e8bc8b4a9e0118d77c32266f76d461f09b40342eb23752960bd89f59929d "$CACHE/herdr"
+    install -m 755 "$CACHE/herdr" "$LOCAL_BIN/herdr"
+    herdr --version
+
+    mkdir -p "$CONFIGURATION_HOME/herdr"
+    link_config "$REPOSITORY/herdr.toml" "$CONFIGURATION_HOME/herdr/config.toml"
+
+    clone_repository https://github.com/s3nn1k/herdr-tools.git "$HOME/projects/personal/herdr-tools"
+    install_command "$HOME/projects/personal/herdr-tools/herdr-tab" herdr-tab
+
+    herdr plugin link "$HOME/projects/personal/herdr-tools" >/dev/null 2>&1 || true
+    herdr integration install pi >/dev/null 2>&1 || true
+}
+
 # Эквивалентность https-URL клона независимо от суффикса .git и хвостового /
 normalize_git_url() {
     local url="$1"
@@ -555,6 +571,8 @@ main() {
     sudo dnf install -y cmake ffmpeg-free yt-dlp
     install_whisper
     install_command "$REPOSITORY/bin/wt" wt
+
+    install_herdr
 
     clone_repository https://github.com/s3nn1k/obsidian-config.git "$CONFIGURATION_HOME/obsidian"
     for vault_name in personal work; do
