@@ -369,6 +369,39 @@ install_herdr() {
     herdr integration install pi >/dev/null 2>&1 || true
 }
 
+# Каталоги профилей Firefox: подкаталоги с times.json в XDG- и легаси-корнях
+find_firefox_profiles() {
+    local profile_root profile_directory
+    for profile_root in "$CONFIGURATION_HOME/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+        [[ -d "$profile_root" ]] || continue
+        for profile_directory in "$profile_root"/*/; do
+            [[ -f "$profile_directory/times.json" ]] || continue
+            printf '%s\n' "${profile_directory%/}"
+        done
+    done
+}
+
+# Firefox: user.js экономии RAM -> симлинк в каждый профиль; без firefox - пропуск
+install_firefox_prefs() {
+    local source="$REPOSITORY/firefox/user.js" profiles profile
+
+    command -v firefox >/dev/null 2>&1 || {
+        echo "bootstrap: firefox не установлен, пропускаю настройку профилей" >&2
+        return 0
+    }
+
+    profiles="$(find_firefox_profiles)"
+    if [[ -z "$profiles" ]]; then
+        firefox -CreateProfile default
+        profiles="$(find_firefox_profiles)"
+    fi
+    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль Firefox" >&2; return 1; }
+
+    while IFS= read -r profile; do
+        link_config "$source" "$profile/user.js"
+    done <<< "$profiles"
+}
+
 # Эквивалентность https-URL клона независимо от суффикса .git и хвостового /
 normalize_git_url() {
     local url="$1"
@@ -466,6 +499,9 @@ main() {
     link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
     link_config "$REPOSITORY/zprofile" "$HOME/.zprofile"
     link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
+
+    # Firefox: prefs экономии RAM -> симлинк в каждый профиль
+    install_firefox_prefs
 
     # Валидация и применение: рабочий стол оживает до загрузок
     sway -C -c "$CONFIGURATION_HOME/sway/config"
