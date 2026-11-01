@@ -369,7 +369,6 @@ install_herdr() {
     herdr integration install pi >/dev/null 2>&1 || true
 }
 
-# Каталоги профилей Firefox: подкаталоги с times.json в XDG- и легаси-корнях
 find_firefox_profiles() {
     local profile_root profile_directory
     for profile_root in "$CONFIGURATION_HOME/mozilla/firefox" "$HOME/.mozilla/firefox"; do
@@ -381,7 +380,6 @@ find_firefox_profiles() {
     done
 }
 
-# Firefox: user.js экономии RAM -> симлинк в каждый профиль; без firefox - пропуск
 install_firefox_prefs() {
     local source="$REPOSITORY/firefox/user.js" profiles profile
 
@@ -500,7 +498,6 @@ main() {
     link_config "$REPOSITORY/zprofile" "$HOME/.zprofile"
     link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
 
-    # Firefox: prefs экономии RAM -> симлинк в каждый профиль
     install_firefox_prefs
 
     # Валидация и применение: рабочий стол оживает до загрузок
