@@ -12,3 +12,6 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
 
 alias kb-nova='sudo systemctl start keyd'
 alias kb-std='sudo systemctl stop keyd'
+
+# Pi
+export PATH="/home/s3nn1k/.pi/agent/bin:$PATH"
