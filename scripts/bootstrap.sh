@@ -377,8 +377,8 @@ main() {
     sudo -v
 
     # Системные пакеты Fedora: git, shell, редактор, языки, утилиты, шрифты
-    sudo dnf install -y git git-crypt gh curl jq make gcc gcc-c++ golang \
-        python3 pipx uv neovim ripgrep fd-find wl-clipboard acl \
+    sudo dnf install -y git git-crypt gh glab curl jq make gcc gcc-c++ golang \
+        python3 pipx uv neovim ripgrep fd-find wl-clipboard acl kubectl \
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
         fontconfig google-noto-sans-fonts unzip
     sudo dnf install -y --allowerasing nodejs24 nodejs24-npm nodejs24-bin nodejs24-npm-bin
@@ -494,6 +494,14 @@ main() {
     sudo "$HOME/projects/personal/keyd-cfqv8/apply.sh"
     "$HOME/projects/personal/keyd-cfqv8/scripts/xremap-apply.sh"
 
+    # Docker: репозиторий docker-ce, движок и плагины, сервис и группа docker
+    if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then
+        sudo dnf config-manager add --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+    fi
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo systemctl enable --now docker
+    sudo usermod -aG docker "$(id -un)"
+
     clone_repository https://github.com/s3nn1k/obsidian-config.git "$CONFIGURATION_HOME/obsidian"
     for vault_name in personal work; do
         VAULT="$HOME/vaults/$vault_name"
@@ -503,7 +511,7 @@ main() {
     "$REPOSITORY/scripts/setup-secrets.sh" link
     # Регистрация vault выполняется через GUI Flatpak-версии Obsidian.
 
-    printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh." \
+    printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh и группы docker." \
         "Дальше: открой nkp, достань ключи и запусти scripts/setup-secrets.sh unlock." \
         "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
