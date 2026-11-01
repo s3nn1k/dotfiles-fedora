@@ -362,10 +362,6 @@ install_herdr() {
     mkdir -p "$CONFIGURATION_HOME/herdr"
     link_config "$REPOSITORY/herdr.toml" "$CONFIGURATION_HOME/herdr/config.toml"
 
-    clone_repository https://github.com/s3nn1k/herdr-tools.git "$HOME/projects/personal/herdr-tools"
-    install_command "$HOME/projects/personal/herdr-tools/herdr-tab" herdr-tab
-
-    herdr plugin link "$HOME/projects/personal/herdr-tools" >/dev/null 2>&1 || true
     herdr integration install pi >/dev/null 2>&1 || true
 }
 

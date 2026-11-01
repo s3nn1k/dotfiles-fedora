@@ -40,7 +40,7 @@ close_workspace = "prefix+shift+d"
 # --- сессия и сервис ------------------------------------------------------
 help = "prefix+?"
 open_notification_target = ""
-toggle_sidebar = ""       # collapse не используем: expanded всегда, узко
+toggle_sidebar = "prefix+b"  # сайдбар скрыт; b показывает по запросу
 detach = "prefix+x"
 
 # --- табы ----------------------------------------------------------------
@@ -56,7 +56,7 @@ rename_tab = ""
 close_tab = ""
 move_tab_previous = ""
 move_tab_next = ""
-switch_workspace = ""    # indexed-синтаксис не умеет буквенные ряды — ряд q..p ниже
+switch_workspace = "prefix+1..9"
 zoom = ""
 copy_mode = ""
 last_pane = ""
@@ -78,115 +78,10 @@ edit_scrollback = ""     # мышкой
 rename_pane = ""
 split_horizontal = ""    # h занят под навигацию
 
-# --- воркспейсы: prefix+q..p = ws по пин-букве (state ws-keys) ------------
-[[keys.command]]
-key = "prefix+q"
-type = "shell"
-command = "herdr-tab ws q"
-
-[[keys.command]]
-key = "prefix+w"
-type = "shell"
-command = "herdr-tab ws w"
-
-[[keys.command]]
-key = "prefix+e"
-type = "shell"
-command = "herdr-tab ws e"
-
-[[keys.command]]
-key = "prefix+r"
-type = "shell"
-command = "herdr-tab ws r"
-
-[[keys.command]]
-key = "prefix+t"
-type = "shell"
-command = "herdr-tab ws t"
-
-[[keys.command]]
-key = "prefix+y"
-type = "shell"
-command = "herdr-tab ws y"
-
-[[keys.command]]
-key = "prefix+u"
-type = "shell"
-command = "herdr-tab ws u"
-
-[[keys.command]]
-key = "prefix+i"
-type = "shell"
-command = "herdr-tab ws i"
-
-[[keys.command]]
-key = "prefix+o"
-type = "shell"
-command = "herdr-tab ws o"
-
-[[keys.command]]
-key = "prefix+p"
-type = "shell"
-command = "herdr-tab ws p"
-
-# --- унести панель в ws по пин-букве: prefix+shift+q..p -------------------
-# уносит только текущую панель — переноса целого таба в API herdr нет
-[[keys.command]]
-key = "prefix+shift+q"
-type = "shell"
-command = "herdr-tab move q"
-
-[[keys.command]]
-key = "prefix+shift+w"
-type = "shell"
-command = "herdr-tab move w"
-
-[[keys.command]]
-key = "prefix+shift+e"
-type = "shell"
-command = "herdr-tab move e"
-
-[[keys.command]]
-key = "prefix+shift+r"
-type = "shell"
-command = "herdr-tab move r"
-
-[[keys.command]]
-key = "prefix+shift+t"
-type = "shell"
-command = "herdr-tab move t"
-
-[[keys.command]]
-key = "prefix+shift+y"
-type = "shell"
-command = "herdr-tab move y"
-
-[[keys.command]]
-key = "prefix+shift+u"
-type = "shell"
-command = "herdr-tab move u"
-
-[[keys.command]]
-key = "prefix+shift+i"
-type = "shell"
-command = "herdr-tab move i"
-
-[[keys.command]]
-key = "prefix+shift+o"
-type = "shell"
-command = "herdr-tab move o"
-
-[[keys.command]]
-key = "prefix+shift+p"
-type = "shell"
-command = "herdr-tab move p"
-
 [ui]
 hide_tab_bar_when_single_tab = true
-sidebar_start_collapsed = false        # expanded всегда (collapsed не показывает $key)
-sidebar_min_width = 10                 # пол из исходников: жёсткого нет, влезает [q]1*
-sidebar_width = 12
-sidebar_max_width = 14
+sidebar_start_collapsed = true         # сайдбара нет вообще
+sidebar_collapsed_mode = "hidden"      # collapse прячет целиком; prefix+b — показать
 prompt_new_tab_name = false         # случайный таб не дёргает диалог имени
 status_indicators = "symbols"       # глифы по форме + цвет состояния
 pane_gaps = false                   # панели делятся общим разделителем, без зазоров
@@ -195,10 +90,3 @@ pane_outer_borders = false          # без внешней рамки — tmux-
 [ui.sound]
 enabled = false # без звука на done/needs-attention
 
-[ui.sidebar.agents]
-# [q]1<индикатор> = воркспейс-буква + номер таба + состояние; имя агента ниже
-rows = [["$key", "tab", "state_icon"], ["agent"]]
-
-[ui.sidebar.spaces]
-# $key = "[r]" одним токеном от ws-keys; branch-строку убрали за компактность
-rows = [["state_icon", "$key"]]
