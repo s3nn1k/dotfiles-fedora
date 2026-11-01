@@ -1,17 +1,40 @@
-onboarding = false
 # herdr — config.toml (симлинк из ~/dotfiles-fedora/herdr.toml)
 # reload: herdr server reload-config; дефолты: herdr --default-config
+onboarding = false
 
+# --- тема: zenwritten_dark ---------------------------------------------------
+# herdr как продолжение терминала: текст и акценты — точные слоты foot
+# (fg, bright-*), поверхности — производные bg foot #15191f; жёлтый и красный —
+# omp-промпт (foot-жёлтые кислые). Другая тема: сменить name и убрать custom.
 [theme]
-name = "terminal" # палитра хост-терминала (zenwritten в iTerm)
+name = "terminal" # база для токенов без override: follows ANSI-слотам терминала
 
 [theme.custom]
-accent = "bright blue" # ANSI-слот 12 профиля (#a7abf2), следует за палитрой iTerm
+text = "#dcdcdc"
+subtext0 = "#c7c7c7"
+surface_dim = "#12161b"
+surface0 = "#1b2027"
+surface1 = "#232931"
+overlay0 = "#4a5261"
+overlay1 = "#686868"
+sidebar_bg = "#15191f"
+active_row_bg = "#232931"
+selection_bg = "#2a3140"
+panel_bg = "#1b2027"
+accent = "#a7abf2"
+red = "#f48771"
+green = "#58e790" # bright-слот foot: статусы читаемее приглушённого #608b4e из omp
+yellow = "#e5c07b"
+blue = "#a7abf2"
+teal = "#00c5c7"
+peach = "#dd7975"
+mauve = "#e17ee1"
 
+# --- клавиши -------------------------------------------------------------------
 [keys]
 prefix = "ctrl+b" # ctrl+space занят переключением раскладок macOS
 
-# --- фокус и раскладка панелей -----------------------------------------
+# фокус и раскладка панелей
 focus_pane_left = "prefix+h"
 focus_pane_down = "prefix+j"
 focus_pane_up = "prefix+k"
@@ -29,29 +52,27 @@ resize_pane_down = "prefix+shift+down"
 resize_pane_up = "prefix+shift+up"
 resize_pane_right = "prefix+shift+right"
 
-# --- воркспейсы ----------------------------------------------------------
-# f — как find-группа в nvim; ↑↓ — колонка воркспейсов в сайдбаре
+# воркспейсы: f — как find-группа в nvim; ↑↓ — колонка воркспейсов в сайдбаре
 previous_workspace = "prefix+up"
 next_workspace = "prefix+down"
 workspace_picker = "prefix+f"
 new_workspace = "prefix+shift+n"
 close_workspace = "prefix+shift+d"
 
-# --- сессия и сервис ------------------------------------------------------
+# сессия и сервис
 help = "prefix+?"
 open_notification_target = ""
 toggle_sidebar = "prefix+b"  # сайдбар скрыт; b показывает по запросу
 detach = "prefix+x"
 
-# --- табы ----------------------------------------------------------------
+# табы
 new_tab = "prefix+n"
 next_tab = "prefix+tab"
 previous_tab = "prefix+shift+tab"
 switch_tab = "prefix+1..9"
 
-# --- отключено ------------------------------------------------------------
-# zoom/copy_mode/агенты-ряды/последняя панель — на всякий случай погашены,
-# чтобы ничего не сработало случайно
+# отключено: zoom/copy_mode/агенты-ряды/последняя панель — погашены, чтобы
+# ничего не сработало случайно
 rename_tab = ""
 close_tab = ""
 move_tab_previous = ""
@@ -78,8 +99,10 @@ edit_scrollback = ""     # мышкой
 rename_pane = ""
 split_horizontal = ""    # h занят под навигацию
 
+# --- ui ----------------------------------------------------------------------
 [ui]
-hide_tab_bar_when_single_tab = true
+hide_tab_bar_when_single_tab = false  # таббар как статус-строка: виден всегда
+tab_bar_position = "bottom"
 sidebar_start_collapsed = true         # сайдбара нет вообще
 sidebar_collapsed_mode = "hidden"      # collapse прячет целиком; prefix+b — показать
 prompt_new_tab_name = false         # случайный таб не дёргает диалог имени
@@ -89,4 +112,3 @@ pane_outer_borders = false          # без внешней рамки — tmux-
 
 [ui.sound]
 enabled = false # без звука на done/needs-attention
-
