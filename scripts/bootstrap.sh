@@ -615,6 +615,7 @@ main() {
 
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh и группы docker." \
         "Дальше: открой nkp, достань ключи и запусти scripts/setup-secrets.sh unlock." \
+        "Firefox-профили: scripts/firefox-profiles.sh init, после unlock - scripts/firefox-profiles.sh pull (сессии и закладки из ~/credentials)." \
         "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
 
