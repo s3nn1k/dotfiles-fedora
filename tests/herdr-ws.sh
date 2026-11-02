@@ -120,7 +120,7 @@ assert_quiet_success "focus 9 beyond workspaces"
 
 run_herdr_ws move-ws 1
 assert_equals "0" "$run_exit_code" "move-ws 1: exit 0"
-assert_call_log "pane move ws-alpha:p1 --workspace ws-alpha --focus" "move-ws 1: moves focused pane to first-position workspace"
+assert_call_log "pane move ws-alpha:p1 --new-tab --workspace ws-alpha --focus" "move-ws 1: moves focused pane to own new tab in first-position workspace"
 
 run_herdr_ws move-ws 5
 assert_equals "0" "$run_exit_code" "move-ws 5 beyond workspaces: exit 0"
@@ -128,7 +128,7 @@ assert_call_log "pane move ws-alpha:p1 --new-workspace --focus" "move-ws 5 beyon
 
 run_herdr_ws move-tab 3
 assert_equals "0" "$run_exit_code" "move-tab 3: exit 0"
-assert_call_log "pane move ws-alpha:p1 --tab ws-alpha:t6 --focus" "move-tab 3: moves focused pane to third-position tab sorted by number"
+assert_call_log "pane move ws-alpha:p1 --tab ws-alpha:t6 --split right --focus" "move-tab 3: splits focused pane into third-position tab sorted by number"
 
 run_herdr_ws move-tab 9
 assert_equals "0" "$run_exit_code" "move-tab 9 beyond tabs: exit 0"

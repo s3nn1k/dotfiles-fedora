@@ -51,7 +51,7 @@ case "$action" in
     if target_id_is_missing "$workspace_id"; then
       exec herdr pane move "$pane_id" --new-workspace --focus
     fi
-    exec herdr pane move "$pane_id" --workspace "$workspace_id" --focus
+    exec herdr pane move "$pane_id" --new-tab --workspace "$workspace_id" --focus
     ;;
   move-tab)
     pane_id="$(herdr pane list | jq -r 'first(.result.panes[] | select(.focused)).pane_id')"
@@ -63,7 +63,7 @@ case "$action" in
     if target_id_is_missing "$tab_id"; then
       exec herdr pane move "$pane_id" --new-tab --focus
     fi
-    exec herdr pane move "$pane_id" --tab "$tab_id" --focus
+    exec herdr pane move "$pane_id" --tab "$tab_id" --split right --focus
     ;;
   new-tab)
     pane_id="$(herdr pane list | jq -r 'first(.result.panes[] | select(.focused)).pane_id')"
