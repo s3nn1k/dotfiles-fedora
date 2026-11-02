@@ -1,13 +1,11 @@
 # herdr — config.toml (симлинк из ~/dotfiles-fedora/herdr.toml)
-# reload: herdr server reload-config; дефолты: herdr --default-config
 onboarding = false
 
-# --- тема: zenwritten_dark ---------------------------------------------------
-# Оттенки — только палитра zenwritten_dark.omp.json: #608b4e (❯), #e5c07b,
-# #d4d4d4, #f48771. Фон и поверхности — bg foot #15191f и производные:
-# в omp-теме фона нет. Смена темы: сменить name на встроенную и убрать custom.
+# --- тема: zenwritten_dark ----------------------------------------------------
+# оттенки — палитра zenwritten_dark.omp.json; фон и поверхности — bg foot
+# #15191f и производные (в omp-теме фона нет)
 [theme]
-name = "terminal" # база для токенов без override: follows ANSI-слотам терминала
+name = "terminal"
 
 [theme.custom]
 text = "#d4d4d4"
@@ -20,7 +18,7 @@ overlay1 = "#5b6472"
 sidebar_bg = "#15191f"
 active_row_bg = "#232931"
 selection_bg = "#2a3140"
-panel_bg = "#15191f" # таббар и панели: ровно bg foot, без ступеньки
+panel_bg = "#15191f"
 accent = "#608b4e"
 red = "#f48771"
 green = "#608b4e"
@@ -32,7 +30,7 @@ mauve = "#e5c07b"
 
 # --- клавиши -------------------------------------------------------------------
 [keys]
-prefix = "ctrl+b" # ctrl+space занят переключением раскладок macOS
+prefix = "ctrl+b"
 
 # фокус и раскладка панелей
 focus_pane_left = "prefix+h"
@@ -40,7 +38,7 @@ focus_pane_down = "prefix+j"
 focus_pane_up = "prefix+k"
 focus_pane_right = "prefix+l"
 
-split_vertical = "prefix+v"        # панель справа
+split_vertical = "prefix+v"
 close_pane = "prefix+d"
 swap_pane_left = "prefix+shift+h"
 swap_pane_down = "prefix+shift+j"
@@ -52,7 +50,7 @@ resize_pane_down = "prefix+shift+down"
 resize_pane_up = "prefix+shift+up"
 resize_pane_right = "prefix+shift+right"
 
-# воркспейсы: f — как find-группа в nvim; ↑↓ — колонка воркспейсов в сайдбаре
+# воркспейсы
 previous_workspace = "prefix+up"
 next_workspace = "prefix+down"
 workspace_picker = "prefix+f"
@@ -62,7 +60,7 @@ close_workspace = "prefix+shift+d"
 # сессия и сервис
 help = "prefix+?"
 open_notification_target = ""
-toggle_sidebar = "prefix+b"  # сайдбар скрыт; b показывает по запросу
+toggle_sidebar = "prefix+b"
 detach = "prefix+x"
 
 # табы
@@ -71,13 +69,12 @@ next_tab = "prefix+tab"
 previous_tab = "prefix+shift+tab"
 switch_tab = "prefix+1..9"
 
-# отключено: zoom/copy_mode/агенты-ряды/последняя панель — погашены, чтобы
-# ничего не сработало случайно
+# отключено
 rename_tab = ""
 close_tab = ""
 move_tab_previous = ""
 move_tab_next = ""
-switch_workspace = ""    # цифры 1..9 отданы табам; ws — пикер f и стрелки
+switch_workspace = ""
 zoom = ""
 copy_mode = ""
 last_pane = ""
@@ -88,18 +85,19 @@ remove_worktree = ""
 previous_agent = ""
 next_agent = ""
 focus_agent = ""
-remote_image_paste = ""  # ctrl+v вставка картинок, активна только в --remote
-reload_config = ""       # из шелла: herdr server reload-config
-resize_mode = ""         # серии ресайза не нужны, есть shift+стрелки
+remote_image_paste = ""
+reload_config = ""
+resize_mode = ""
 rename_workspace = ""
-new_worktree = ""        # git worktree — решает агент, не руками
-goto = ""                # цифры 1..9 внутри не перенастраиваются
-settings = ""            # всё есть в config.toml
-edit_scrollback = ""     # мышкой
+new_worktree = ""
+goto = ""
+settings = ""
+edit_scrollback = ""
 rename_pane = ""
-split_horizontal = ""    # h занят под навигацию
+split_horizontal = ""
 
-# воркспейсы по позиции сайдбара: q..p -> 1..10; shift-ряд переносит панель (скрипт bin/herdr-ws.sh)
+# ws по позиции сайдбара: q..p -> фокус, shift+q..p -> перенос панели
+# (скрипт bin/herdr-ws.sh)
 [[keys.command]]
 key = "prefix+q"
 type = "shell"
@@ -150,7 +148,7 @@ key = "prefix+p"
 type = "shell"
 command = "herdr-ws focus 10"
 
-# перенос панели в воркспейс по позиции сайдбара: shift+q..p -> 1..10
+# перенос панели в ws: shift+q..p -> 1..10
 [[keys.command]]
 key = "prefix+shift+q"
 type = "shell"
@@ -201,7 +199,7 @@ key = "prefix+shift+p"
 type = "shell"
 command = "herdr-ws move-ws 10"
 
-# перенос панели в таб: shift+1..9 -> номер таба в воркспейсе панели
+# перенос панели в таб: shift+1..9
 [[keys.command]]
 key = "prefix+shift+1"
 type = "shell"
@@ -249,14 +247,14 @@ command = "herdr-ws move-tab 9"
 
 # --- ui ----------------------------------------------------------------------
 [ui]
-hide_tab_bar_when_single_tab = false  # таббар как статус-строка: виден всегда
+hide_tab_bar_when_single_tab = false
 tab_bar_position = "bottom"
-sidebar_start_collapsed = true         # сайдбара нет вообще
-sidebar_collapsed_mode = "hidden"      # collapse прячет целиком; prefix+b — показать
-prompt_new_tab_name = false         # случайный таб не дёргает диалог имени
-status_indicators = "symbols"       # глифы по форме + цвет состояния
-pane_gaps = false                   # панели делятся общим разделителем, без зазоров
-pane_outer_borders = false          # без внешней рамки — tmux-стиль
+sidebar_start_collapsed = true
+sidebar_collapsed_mode = "hidden"
+prompt_new_tab_name = false
+status_indicators = "symbols"
+pane_gaps = false
+pane_outer_borders = false
 
 [ui.sound]
-enabled = false # без звука на done/needs-attention
+enabled = false
