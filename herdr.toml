@@ -99,56 +99,153 @@ edit_scrollback = ""     # мышкой
 rename_pane = ""
 split_horizontal = ""    # h занят под навигацию
 
-# воркспейсы по позиции сайдбара: q..p -> 1..10 (скрипт bin/herdr-ws-focus.sh)
+# воркспейсы по позиции сайдбара: q..p -> 1..10; shift-ряд переносит панель (скрипт bin/herdr-ws.sh)
 [[keys.command]]
 key = "prefix+q"
 type = "shell"
-command = "herdr-ws-focus 1"
+command = "herdr-ws focus 1"
 
 [[keys.command]]
 key = "prefix+w"
 type = "shell"
-command = "herdr-ws-focus 2"
+command = "herdr-ws focus 2"
 
 [[keys.command]]
 key = "prefix+e"
 type = "shell"
-command = "herdr-ws-focus 3"
+command = "herdr-ws focus 3"
 
 [[keys.command]]
 key = "prefix+r"
 type = "shell"
-command = "herdr-ws-focus 4"
+command = "herdr-ws focus 4"
 
 [[keys.command]]
 key = "prefix+t"
 type = "shell"
-command = "herdr-ws-focus 5"
+command = "herdr-ws focus 5"
 
 [[keys.command]]
 key = "prefix+y"
 type = "shell"
-command = "herdr-ws-focus 6"
+command = "herdr-ws focus 6"
 
 [[keys.command]]
 key = "prefix+u"
 type = "shell"
-command = "herdr-ws-focus 7"
+command = "herdr-ws focus 7"
 
 [[keys.command]]
 key = "prefix+i"
 type = "shell"
-command = "herdr-ws-focus 8"
+command = "herdr-ws focus 8"
 
 [[keys.command]]
 key = "prefix+o"
 type = "shell"
-command = "herdr-ws-focus 9"
+command = "herdr-ws focus 9"
 
 [[keys.command]]
 key = "prefix+p"
 type = "shell"
-command = "herdr-ws-focus 10"
+command = "herdr-ws focus 10"
+
+# перенос панели в воркспейс по позиции сайдбара: shift+q..p -> 1..10
+[[keys.command]]
+key = "prefix+shift+q"
+type = "shell"
+command = "herdr-ws move-ws 1"
+
+[[keys.command]]
+key = "prefix+shift+w"
+type = "shell"
+command = "herdr-ws move-ws 2"
+
+[[keys.command]]
+key = "prefix+shift+e"
+type = "shell"
+command = "herdr-ws move-ws 3"
+
+[[keys.command]]
+key = "prefix+shift+r"
+type = "shell"
+command = "herdr-ws move-ws 4"
+
+[[keys.command]]
+key = "prefix+shift+t"
+type = "shell"
+command = "herdr-ws move-ws 5"
+
+[[keys.command]]
+key = "prefix+shift+y"
+type = "shell"
+command = "herdr-ws move-ws 6"
+
+[[keys.command]]
+key = "prefix+shift+u"
+type = "shell"
+command = "herdr-ws move-ws 7"
+
+[[keys.command]]
+key = "prefix+shift+i"
+type = "shell"
+command = "herdr-ws move-ws 8"
+
+[[keys.command]]
+key = "prefix+shift+o"
+type = "shell"
+command = "herdr-ws move-ws 9"
+
+[[keys.command]]
+key = "prefix+shift+p"
+type = "shell"
+command = "herdr-ws move-ws 10"
+
+# перенос панели в таб: shift+1..9 -> номер таба в воркспейсе панели
+[[keys.command]]
+key = "prefix+shift+1"
+type = "shell"
+command = "herdr-ws move-tab 1"
+
+[[keys.command]]
+key = "prefix+shift+2"
+type = "shell"
+command = "herdr-ws move-tab 2"
+
+[[keys.command]]
+key = "prefix+shift+3"
+type = "shell"
+command = "herdr-ws move-tab 3"
+
+[[keys.command]]
+key = "prefix+shift+4"
+type = "shell"
+command = "herdr-ws move-tab 4"
+
+[[keys.command]]
+key = "prefix+shift+5"
+type = "shell"
+command = "herdr-ws move-tab 5"
+
+[[keys.command]]
+key = "prefix+shift+6"
+type = "shell"
+command = "herdr-ws move-tab 6"
+
+[[keys.command]]
+key = "prefix+shift+7"
+type = "shell"
+command = "herdr-ws move-tab 7"
+
+[[keys.command]]
+key = "prefix+shift+8"
+type = "shell"
+command = "herdr-ws move-tab 8"
+
+[[keys.command]]
+key = "prefix+shift+9"
+type = "shell"
+command = "herdr-ws move-tab 9"
 
 # --- ui ----------------------------------------------------------------------
 [ui]
