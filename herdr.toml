@@ -20,7 +20,7 @@ overlay1 = "#5b6472"
 sidebar_bg = "#15191f"
 active_row_bg = "#232931"
 selection_bg = "#2a3140"
-panel_bg = "#1b2027"
+panel_bg = "#15191f" # таббар и панели: ровно bg foot, без ступеньки
 accent = "#608b4e"
 red = "#f48771"
 green = "#608b4e"
@@ -98,6 +98,57 @@ settings = ""            # всё есть в config.toml
 edit_scrollback = ""     # мышкой
 rename_pane = ""
 split_horizontal = ""    # h занят под навигацию
+
+# воркспейсы по позиции сайдбара: q..p -> 1..10 (скрипт bin/herdr-ws-focus.sh)
+[[keys.command]]
+key = "prefix+q"
+type = "shell"
+command = "herdr-ws-focus 1"
+
+[[keys.command]]
+key = "prefix+w"
+type = "shell"
+command = "herdr-ws-focus 2"
+
+[[keys.command]]
+key = "prefix+e"
+type = "shell"
+command = "herdr-ws-focus 3"
+
+[[keys.command]]
+key = "prefix+r"
+type = "shell"
+command = "herdr-ws-focus 4"
+
+[[keys.command]]
+key = "prefix+t"
+type = "shell"
+command = "herdr-ws-focus 5"
+
+[[keys.command]]
+key = "prefix+y"
+type = "shell"
+command = "herdr-ws-focus 6"
+
+[[keys.command]]
+key = "prefix+u"
+type = "shell"
+command = "herdr-ws-focus 7"
+
+[[keys.command]]
+key = "prefix+i"
+type = "shell"
+command = "herdr-ws-focus 8"
+
+[[keys.command]]
+key = "prefix+o"
+type = "shell"
+command = "herdr-ws-focus 9"
+
+[[keys.command]]
+key = "prefix+p"
+type = "shell"
+command = "herdr-ws-focus 10"
 
 # --- ui ----------------------------------------------------------------------
 [ui]
