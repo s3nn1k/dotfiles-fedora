@@ -506,7 +506,7 @@ main() {
     install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-repo
     install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-textconv
     install_command "$REPOSITORY/bin/git-cred-read.sh" git-cred-read
-    install_command "$REPOSITORY/bin/herdr-ws-focus.sh" herdr-ws-focus
+    install_command "$REPOSITORY/bin/herdr-ws.sh" herdr-ws
     link_config "$LOCAL_BIN/git-crypt-repo" "$HOME/.local/share/git-crypt/hooks/pre-commit"
     link_config "$REPOSITORY/systemd/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
     systemctl --user daemon-reload
