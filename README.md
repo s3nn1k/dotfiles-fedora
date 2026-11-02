@@ -39,8 +39,9 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
 
 - `bin/` - команды, которые bootstrap ставит в `~/.local/bin` для других репозиториев:
   credentials-setup (линки и права `~/credentials`), git-crypt-repo (unlock/lock
-  git-crypt-репозиториев), git-cred-read (git credential helper), wt (транскрибация:
-  ffmpeg + whisper.cpp).
+  git-crypt-репозиториев), git-cred-read (git credential helper), herdr-ws-focus
+  (фокус воркспейса herdr по позиции сайдбара 1..10), wt (транскрибация: ffmpeg +
+  whisper.cpp).
 - `herdr.toml` - конфиг herdr (терминальный менеджер панелей и воркспейсов); bootstrap
   линкует его в `~/.config/herdr/config.toml`.
 - `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
