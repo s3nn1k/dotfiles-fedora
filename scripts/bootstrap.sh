@@ -467,7 +467,7 @@ main() {
     sudo -v
 
     # Системные пакеты Fedora: git, shell, редактор, языки, утилиты, шрифты
-    sudo dnf install -y git git-crypt gh glab curl jq make gcc gcc-c++ golang \
+    sudo dnf install -y git git-crypt gh glab curl jq make gcc gcc-c++ golang postgresql \
         python3 pipx uv neovim ripgrep fd-find wl-clipboard acl kubectl \
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
         fontconfig google-noto-sans-fonts unzip
@@ -493,6 +493,7 @@ main() {
     link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
     link_config "$REPOSITORY/zprofile" "$HOME/.zprofile"
     link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
+    link_config "$REPOSITORY/psqlrc" "$HOME/.psqlrc"
 
     install_firefox_prefs
 
