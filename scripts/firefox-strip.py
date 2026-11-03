@@ -21,10 +21,6 @@ def main():
         connection.execute(
             "DELETE FROM moz_places WHERE id NOT IN (SELECT fk FROM moz_bookmarks WHERE fk IS NOT NULL)"
         )
-        connection.execute(
-            "DELETE FROM moz_favicons WHERE id NOT IN"
-            " (SELECT favicon_id FROM moz_places WHERE favicon_id IS NOT NULL)"
-        )
         connection.commit()
         connection.execute("VACUUM")
         connection.close()
