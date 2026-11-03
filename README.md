@@ -44,6 +44,9 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
   whisper.cpp).
 - `herdr.toml` - конфиг herdr (терминальный менеджер панелей и воркспейсов); bootstrap
   линкует его в `~/.config/herdr/config.toml`.
+- `psqlrc` - UX-конфиг psql (pager off, `\x auto`, timing, промпт `user@host:port` и
+  текущая база); bootstrap линкует его в `~/.psqlrc`, `credentials-setup` линкует
+  postgres-креды из `~/credentials` в `~/.pgpass` и `~/.pg_service.conf`.
 - `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
   mihomo-apply.sh (конфиг и служба mihomo).
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
