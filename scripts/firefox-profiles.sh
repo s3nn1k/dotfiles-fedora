@@ -39,6 +39,7 @@ is_git_crypt_locked() {
 }
 
 PROFILE_NAMES=()
+REGISTER_BACKUPS_DONE=0
 
 profile_names() {
     [[ -d "$CREDENTIALS_FIREFOX" ]] || fail "нет ~/credentials/firefox - нечего разворачивать"
@@ -60,13 +61,13 @@ find_store() {
         id=$(awk '
             BEGIN { FS = "=" }
             /^\[/ {
-                if (want && sid != "") { print sid; exit }
+                if (want && storeid != "") { print storeid; exit }
                 want = 0
-                sid = ""
+                storeid = ""
             }
-            $1 == "StoreID" { sid = $2 }
+            $1 == "StoreID" { storeid = $2 }
             $1 == "Default" && $2 == "1" { want = 1 }
-            END { if (want && sid != "") print sid }
+            END { if (want && storeid != "") print storeid }
         ' "$ini")
     fi
     if [[ -n "$id" && -f "$groups_dir/$id.sqlite" ]]; then
@@ -124,13 +125,15 @@ register_profile() {
         echo "firefox-profiles: $name: стор несовместим (нужна таблица Profiles с колонками path,name,avatar,themeId,themeFg,themeBg) - пропущен" >&2
         return 0
     fi
-    python3 - "$name" "$STORE_FILE" "$PROFILES_ROOT/profiles.ini" "$PROFILES_ROOT/$name/prefs.js" "$STORE_ID" <<'PYEOF' || return 0
+    local python_status=0
+    python3 - "$name" "$STORE_FILE" "$PROFILES_ROOT/profiles.ini" "$PROFILES_ROOT/$name/prefs.js" "$STORE_ID" "$REGISTER_BACKUPS_DONE" <<'PYEOF' || python_status=$?
 import os
 import shutil
 import sqlite3
 import sys
 
 name, store_path, ini_path, prefs_path, store_id = sys.argv[1:6]
+backups_done = sys.argv[6] == "1"
 
 store_pref = f'user_pref("toolkit.profiles.storeID", "{store_id}");'
 created_pref = 'user_pref("browser.profiles.created", true);'
@@ -202,12 +205,13 @@ try:
     if not ini_needed and not sqlite_needed and not prefs_needed:
         sys.exit(0)
 
-    for target in (ini_path, store_path):
-        backup = target + ".pre-register"
-        if os.path.exists(backup):
-            problem(f"уже есть {backup}, разберись вручную")
-    shutil.copy2(ini_path, ini_path + ".pre-register")
-    shutil.copy2(store_path, store_path + ".pre-register")
+    if not backups_done:
+        for target in (ini_path, store_path):
+            backup = target + ".pre-register"
+            if os.path.exists(backup):
+                problem(f"уже есть {backup}, разберись вручную")
+        shutil.copy2(ini_path, ini_path + ".pre-register")
+        shutil.copy2(store_path, store_path + ".pre-register")
 
     if ini_needed:
         new_block = [f"StoreID={store_id}"] + [
@@ -233,10 +237,16 @@ try:
             conn.execute("UPDATE Profiles SET name = ? WHERE path = ?", (name, name))
         conn.commit()
     conn.close()
+    sys.exit(3)
 except (OSError, sqlite3.Error) as error:
     problem(str(error))
 PYEOF
-    echo "firefox-profiles: $name: зарегистрирован в панели (StoreID=$STORE_ID)"
+    if (( python_status == 3 )); then
+        REGISTER_BACKUPS_DONE=1
+        echo "firefox-profiles: $name: зарегистрирован в панели (StoreID=$STORE_ID)"
+    elif (( python_status == 0 )); then
+        echo "firefox-profiles: $name: уже зарегистрирован в панели"
+    fi
 }
 
 cmd_init() {
