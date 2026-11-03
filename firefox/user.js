@@ -70,6 +70,7 @@ user_pref("browser.tabs.groups.smart.enabled", false);                          
 // UI-гигиена: фулскрин и плотность.
 user_pref("full-screen-api.warning.timeout", 0);                                        // 3000 -> 0: без плашки "сайт перешёл в полный экран"
 user_pref("browser.compactmode.show", true);                                            // false -> true: пункт "Компактно" в кастомизации тулбара
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);                 // false -> true: включить userChrome.css профиля
 
 // Агрессивные опции: каждая с трейдоффом, включается снятием // перед строкой.
 // user_pref("fission.autostart", false);                                // true -> false: минус site isolation - сайты делят процессы (риск Spectre-класса), официально непроверяемый путь; при webIsolated=2 экономия минимальна
