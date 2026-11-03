@@ -56,7 +56,6 @@ user_pref("network.prefetch-next", false);                                      
 user_pref("network.dns.disablePrefetch", true);                                         // false -> true: без DNS-prefetch доменов со ссылок
 
 // Тёмная тема: интерфейс и цвет страниц.
-user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");              // default-theme (системная) -> Dark: тёмная тема UI
 user_pref("layout.css.prefers-color-scheme.content-override", 2);                       // 0 (системная) -> 2: страницы отдают тёмную версию
 
 // Агрессивные опции: каждая с трейдоффом, включается снятием // перед строкой.
