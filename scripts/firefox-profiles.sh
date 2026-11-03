@@ -13,8 +13,8 @@ usage() {
     cat >&2 <<'EOF'
 usage: firefox-profiles.sh init|push|pull|reset
   init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile и зарегистрировать профили в панели
-  push            скопировать cookies.sqlite и places.sqlite из профилей в ~/credentials/firefox
-  pull            развернуть cookies.sqlite и places.sqlite из ~/credentials/firefox в профили и зарегистрировать их в панели
+  push            скопировать places.sqlite (закладки и история) из профилей в ~/credentials/firefox
+  pull            развернуть places.sqlite (закладки и история) из ~/credentials/firefox в профили и зарегистрировать их в панели
   reset           удалить профили: блоки profiles.ini, каталоги, строки стора панели; данные в ~/credentials/firefox остаются
 EOF
     exit 1
@@ -276,21 +276,13 @@ cmd_push() {
             failed=1
             continue
         fi
-        if [[ ! -f "$profile/cookies.sqlite" ]]; then
-            echo "firefox-profiles: $name: нет cookies.sqlite в профиле" >&2
-            failed=1
-            continue
-        fi
         if [[ ! -f "$profile/places.sqlite" ]]; then
             echo "firefox-profiles: $name: нет places.sqlite в профиле" >&2
             failed=1
             continue
         fi
-        ensure_clean_sqlite "$profile/cookies.sqlite"
         ensure_clean_sqlite "$profile/places.sqlite"
         mkdir -p "$credentials_dir"
-        cp "$profile/cookies.sqlite" "$credentials_dir/cookies.sqlite"
-        chmod 600 "$credentials_dir/cookies.sqlite"
         cp "$profile/places.sqlite" "$credentials_dir/places.sqlite"
         chmod 600 "$credentials_dir/places.sqlite"
     done
@@ -311,26 +303,18 @@ cmd_pull() {
             failed=1
             continue
         fi
-        if [[ ! -f "$credentials_dir/cookies.sqlite" ]]; then
-            echo "firefox-profiles: $name: нет cookies.sqlite в $credentials_dir" >&2
-            failed=1
-            continue
-        fi
         if [[ ! -f "$credentials_dir/places.sqlite" ]]; then
             echo "firefox-profiles: $name: нет places.sqlite в $credentials_dir" >&2
             failed=1
             continue
         fi
-        if is_git_crypt_locked "$credentials_dir/cookies.sqlite" || is_git_crypt_locked "$credentials_dir/places.sqlite"; then
+        if is_git_crypt_locked "$credentials_dir/places.sqlite"; then
             fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
         fi
-        ensure_clean_sqlite "$profile/cookies.sqlite"
         ensure_clean_sqlite "$profile/places.sqlite"
-        cp "$credentials_dir/cookies.sqlite" "$profile/cookies.sqlite"
-        chmod 600 "$profile/cookies.sqlite"
         cp "$credentials_dir/places.sqlite" "$profile/places.sqlite"
         chmod 600 "$profile/places.sqlite"
-        echo "firefox-profiles: $name: скопированы cookies.sqlite, places.sqlite"
+        echo "firefox-profiles: $name: скопирован places.sqlite"
         register_profile "$name"
     done
     [[ $failed -eq 0 ]] || exit 1
