@@ -64,7 +64,7 @@ decryption_canary_path() {
         printf '%s\n' "git/gitconfig"
         return
     fi
-    git -C "$repository" ls-files -- '*.md' ':(exclude)README.md' | sed -n '1p'
+    git -C "$repository" ls-files -- '*.md' ':(exclude)**/README.md' | sed -n '1p'
 }
 
 verify_repository_decrypted() {
