@@ -24,6 +24,9 @@ def main():
         connection.commit()
         connection.execute("VACUUM")
         connection.close()
+        for suffix in ("-wal", "-shm"):
+            if os.path.exists(database + suffix):
+                os.remove(database + suffix)
         after = os.path.getsize(database)
     except (OSError, sqlite3.Error) as error:
         print(str(error), file=sys.stderr)
