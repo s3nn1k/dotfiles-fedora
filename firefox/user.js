@@ -50,6 +50,15 @@ user_pref("network.negotiate-auth.trusted-uris", "");                           
 user_pref("media.gmp-gmpopenh264.provider.enabled", true);                              // false (дистро Fedora) -> true: разрешить провайдера OpenH264 - загрузка кодека Cisco
 user_pref("media.gmp-gmpopenh264.enabled", true);                                       // false (дистро Fedora) -> true: кодек H.264 для видеозвонков WebRTC (Meet)
 
+// Приватность: формы ввода и фоновые предзагрузки.
+user_pref("browser.formfill.enable", false);                                            // true -> false: не запоминать историю полей форм
+user_pref("network.prefetch-next", false);                                              // true -> false: без фоновой предзагрузки ссылок со страницы
+user_pref("network.dns.disablePrefetch", true);                                         // false -> true: без DNS-prefetch доменов со ссылок
+
+// Тёмная тема: интерфейс и цвет страниц.
+user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");              // default-theme (системная) -> Dark: тёмная тема UI
+user_pref("layout.css.prefers-color-scheme.content-override", 2);                       // 0 (системная) -> 2: страницы отдают тёмную версию
+
 // Агрессивные опции: каждая с трейдоффом, включается снятием // перед строкой.
 // user_pref("fission.autostart", false);                                // true -> false: минус site isolation - сайты делят процессы (риск Spectre-класса), официально непроверяемый путь; при webIsolated=2 экономия минимальна
 // user_pref("dom.ipc.processCount", 2);                                // 4 -> 2: ещё меньше процессов, ценой взаимных тормозов табов
