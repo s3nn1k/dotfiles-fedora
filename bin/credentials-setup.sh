@@ -20,6 +20,7 @@ SECURE_DIRECTORIES=(
     "$REPOSITORY_ROOT/kube"
     "$REPOSITORY_ROOT/nkp"
     "$REPOSITORY_ROOT/pi"
+    "$REPOSITORY_ROOT/postgres"
     "$REPOSITORY_ROOT/ssh"
 )
 SECURE_FILES=(
@@ -28,6 +29,7 @@ SECURE_FILES=(
     "$REPOSITORY_ROOT"/kube/*
     "$REPOSITORY_ROOT"/nkp/*.txt
     "$REPOSITORY_ROOT"/pi/*
+    "$REPOSITORY_ROOT"/postgres/*
     "$REPOSITORY_ROOT"/ssh/*
 )
 
@@ -133,6 +135,10 @@ preflight_destination_parents() {
     fi
     [ -e "$REPOSITORY_ROOT/git/git-credentials" ] &&
         validate_destination_parent "$HOME/.git-credentials"
+    [ -e "$REPOSITORY_ROOT/postgres/pgpass" ] &&
+        validate_destination_parent "$HOME/.pgpass"
+    [ -e "$REPOSITORY_ROOT/postgres/pg_service.conf" ] &&
+        validate_destination_parent "$HOME/.pg_service.conf"
     if [ -d "$REPOSITORY_ROOT/pi" ] && {
         [ -e "$REPOSITORY_ROOT/pi/auth.json" ] ||
         [ -e "$REPOSITORY_ROOT/pi/mcp.json" ]
@@ -175,6 +181,14 @@ link)
 
     if [ -f "$REPOSITORY_ROOT/git/git-credentials" ]; then
         link_file "$REPOSITORY_ROOT/git/git-credentials" "$HOME/.git-credentials"
+    fi
+
+    if [ -f "$REPOSITORY_ROOT/postgres/pgpass" ]; then
+        link_file "$REPOSITORY_ROOT/postgres/pgpass" "$HOME/.pgpass"
+    fi
+
+    if [ -f "$REPOSITORY_ROOT/postgres/pg_service.conf" ]; then
+        link_file "$REPOSITORY_ROOT/postgres/pg_service.conf" "$HOME/.pg_service.conf"
     fi
 
     if [ -d "$REPOSITORY_ROOT/pi" ] && {

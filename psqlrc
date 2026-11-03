@@ -1,0 +1,4 @@
+\pset pager off
+\x auto
+\timing on
+\set PROMPT1 '%n@%M:%> %~ %# '
