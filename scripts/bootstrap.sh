@@ -396,6 +396,17 @@ install_firefox_prefs() {
     done <<< "$profiles"
 }
 
+install_firefox_policies() {
+    local source="$REPOSITORY/firefox/policies.json"
+
+    command -v firefox >/dev/null 2>&1 || {
+        echo "bootstrap: firefox не установлен, пропускаю политики" >&2
+        return 0
+    }
+
+    sudo install -D -m 644 "$source" /etc/firefox/policies/policies.json
+}
+
 # Эквивалентность https-URL клона независимо от суффикса .git и хвостового /
 normalize_git_url() {
     local url="$1"
@@ -496,6 +507,7 @@ main() {
     link_config "$REPOSITORY/psqlrc" "$HOME/.psqlrc"
 
     install_firefox_prefs
+    install_firefox_policies
 
     # Валидация и применение: рабочий стол оживает до загрузок
     sway -C -c "$CONFIGURATION_HOME/sway/config"
