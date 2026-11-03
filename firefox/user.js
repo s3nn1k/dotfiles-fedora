@@ -32,6 +32,8 @@ user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);   
 // Стартовый шум и UI: онбординг, промо-блоки, фоновые пробы сети.
 user_pref("browser.aboutwelcome.enabled", false);                                       // true -> false: онбординг при первом запуске
 user_pref("browser.startup.homepage_override.mstone", "ignore");                        // не задан (пишется после апдейта) -> "ignore": подавить страницу "что нового"
+user_pref("browser.startup.homepage", "about:blank");                                 // https://start.fedoraproject.org/ (дистро Fedora) -> about:blank: пустая страница при старте
+user_pref("browser.newtabpage.pinned", "[]");                                         // плитка start.fedoraproject.org (дистро Fedora) -> []: без закреплённой плитки Fedora
 user_pref("browser.shell.checkDefaultBrowser", false);                                  // true -> false: проверка дефолтного браузера при старте
 user_pref("browser.preferences.moreFromMozilla", false);                                // true -> false: промо-блок "Больше от Mozilla" в настройках
 user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);   // true -> false: советы-рекомендации расширений в UI
