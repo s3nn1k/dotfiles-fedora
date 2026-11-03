@@ -42,6 +42,8 @@ user_pref("network.captive-portal-service.enabled", false);                     
 user_pref("network.connectivity-service.enabled", false);                               // true -> false: фоновая проба связности
 user_pref("captivedetect.canonicalURL", "");                                            // detectportal.firefox.com/canonical.html -> "": URL пробы captive portal
 user_pref("browser.uidensity", 1);                                                      // 0 (обычная) -> 1: компактная плотность UI
+// Геолокация: Geolocation API выключен, сайты не получают координаты.
+user_pref("geo.enabled", false);                                                        // true -> false: сайтам недоступна геолокация
 
 // Агрессивные опции: каждая с трейдоффом, включается снятием // перед строкой.
 // user_pref("fission.autostart", false);                                // true -> false: минус site isolation - сайты делят процессы (риск Spectre-класса), официально непроверяемый путь; при webIsolated=2 экономия минимальна
