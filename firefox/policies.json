@@ -1,0 +1,12 @@
+{
+  "policies": {
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisableFeedbackCommands": true,
+    "DisableProfileRefresh": true,
+    "DontCheckDefaultBrowser": true,
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "CaptivePortal": false
+  }
+}
