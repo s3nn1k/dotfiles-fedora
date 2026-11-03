@@ -58,6 +58,32 @@ is_git_crypt_locked() {
     printf '\000GITCRYPT' | cmp -s - <(head -c 9 "$1")
 }
 
+decryption_canary_path() {
+    local repository="$1"
+    if [[ "$repository" == "$CREDENTIALS" ]]; then
+        printf '%s\n' "git/gitconfig"
+        return
+    fi
+    git -C "$repository" ls-files -- '*.md' ':(exclude)README.md' | sed -n '1p'
+}
+
+verify_repository_decrypted() {
+    local repository="$1" canary_path
+    canary_path="$(decryption_canary_path "$repository")"
+    if [[ -z "$canary_path" ]]; then
+        echo "setup-secrets: nothing tracked under the git-crypt filter to verify in $repository" >&2
+        return 0
+    fi
+    if [[ ! -f "$repository/$canary_path" ]]; then
+        fail "decryption canary file is missing after unlock: $repository/$canary_path"
+    fi
+    if is_git_crypt_locked "$repository/$canary_path"; then
+        fail "$repository is still encrypted after unlock: $repository/$canary_path
+probable cause: rotated git-crypt key - the installed key is stale, so 'make unlock' was a no-op
+treatment: cd $repository && make lock && make unlock (paste the new base64 key, or run VAULT_KEY=<key> make unlock)"
+    fi
+}
+
 command_unlock() {
     command -v make >/dev/null 2>&1 || fail "make is required"
     for repository in "${REPOSITORIES[@]}"; do
@@ -72,18 +98,18 @@ command_unlock() {
     for repository in "${REPOSITORIES[@]}"; do
         run_make_target "$repository" init
         run_make_target "$repository" unlock
+        verify_repository_decrypted "$repository"
     done
-    if [[ ! -f "$CREDENTIALS/git/gitconfig" ]] || is_git_crypt_locked "$CREDENTIALS/git/gitconfig"; then
-        fail "unlocked credentials gitconfig is missing: $CREDENTIALS/git/gitconfig"
-    fi
 
     command_link
     echo "setup-secrets: credentials and vaults unlocked"
 }
 
 command_link() {
-    if [[ -d "$CREDENTIALS" ]]; then
-        if [[ -f "$CREDENTIALS/git/gitconfig" ]] && ! is_git_crypt_locked "$CREDENTIALS/git/gitconfig"; then
+    if [[ -f "$CREDENTIALS/git/gitconfig" ]]; then
+        if is_git_crypt_locked "$CREDENTIALS/git/gitconfig"; then
+            echo "setup-secrets: credentials locked - run 'unlock' first" >&2
+        else
             [[ -x "$CREDENTIALS_SETUP" ]] || fail "helper is missing or not executable: $CREDENTIALS_SETUP"
             run_make_target "$CREDENTIALS" link
             link_safely "$CREDENTIALS/git/gitconfig" "$RUNTIME_GITCONFIG"
