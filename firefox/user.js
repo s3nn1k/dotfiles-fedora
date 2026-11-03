@@ -44,7 +44,6 @@ user_pref("captivedetect.canonicalURL", "");                                    
 user_pref("browser.uidensity", 1);                                                      // 0 (обычная) -> 1: компактная плотность UI
 // Геолокация: Geolocation API выключен, сайты не получают координаты.
 user_pref("geo.enabled", false);                                                        // true -> false: сайтам недоступна геолокация
-                                                                                        
 // Дистро-дефолты Fedora: перекрытия redhat-префов под сетап sway + VPN.
 user_pref("browser.gnome-search-provider.enabled", false);                              // true (дистро Fedora) -> false: без D-Bus-провайдера поиска GNOME, сетап sway
 user_pref("network.negotiate-auth.trusted-uris", "");                                   // "https://" (дистро Fedora) -> "": без SPNEGO-делегирования Kerberos-кред любому https
