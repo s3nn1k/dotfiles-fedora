@@ -14,7 +14,7 @@ usage() {
 usage: firefox-profiles.sh init|push|pull|reset
   init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile и зарегистрировать профили в панели
   push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
-  pull            развернуть places.sqlite (закладки и история) из ~/credentials/firefox в профили и зарегистрировать их в панели
+  pull            развернуть places.sqlite (закладки, как выгружено push) из ~/credentials/firefox в профили и зарегистрировать их в панели
   reset           удалить профили: блоки profiles.ini, каталоги, строки стора панели; данные в ~/credentials/firefox остаются
 EOF
     exit 1
