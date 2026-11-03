@@ -26,6 +26,7 @@ user_pref("browser.ml.chat.enabled", false);                                    
 
 // Спонсорские подсказки: sponsored-подсказки urlbar и спонсорский контент новой вкладки.
 user_pref("browser.urlbar.suggest.quicksuggest.sponsored", false);                      // false (sticky-дефолт) -> false: закрепление без спонсорских подсказок urlbar
+user_pref("browser.urlbar.suggest.quicksuggest.nonsponsored", false);                   // false (sticky-дефолт) -> false: закрепление без unsponsored-подсказок Mozilla
 user_pref("browser.newtabpage.activity-stream.showSponsored", false);                   // true -> false: спонсорский контент на новой вкладке
 user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);           // true -> false: спонсорские плитки топ-сайтов
 
@@ -57,6 +58,18 @@ user_pref("network.dns.disablePrefetch", true);                                 
 
 // Тёмная тема: интерфейс и цвет страниц.
 user_pref("layout.css.prefers-color-scheme.content-override", 2);                       // 0 (системная) -> 2: страницы отдают тёмную версию
+
+// Защита: трекеры и проверка загрузок.
+user_pref("browser.contentblocking.category", "strict");                                // standard -> strict: ETP-строгий, меньше фоновых трекеров; сломанный сайт лечится щитом в urlbar
+user_pref("browser.safebrowsing.downloads.remote.enabled", false);                      // true -> false: без отправки хэшей скачиваний на проверку Google; локальные списки malware/phishing остаются
+
+// AI-механики: превью ссылок и группировка табов.
+user_pref("browser.ml.linkPreview.enabled", false);                                     // true -> false: без AI-превью ссылок
+user_pref("browser.tabs.groups.smart.enabled", false);                                  // true -> false: без AI-группировки табов
+
+// UI-гигиена: фулскрин и плотность.
+user_pref("full-screen-api.warning.timeout", 0);                                        // 3000 -> 0: без плашки "сайт перешёл в полный экран"
+user_pref("browser.compactmode.show", true);                                            // false -> true: пункт "Компактно" в кастомизации тулбара
 
 // Агрессивные опции: каждая с трейдоффом, включается снятием // перед строкой.
 // user_pref("fission.autostart", false);                                // true -> false: минус site isolation - сайты делят процессы (риск Spectre-класса), официально непроверяемый путь; при webIsolated=2 экономия минимальна
