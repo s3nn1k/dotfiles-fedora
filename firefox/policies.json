@@ -3,6 +3,7 @@
     "DisableTelemetry": true,
     "DisableFirefoxStudies": true,
     "DisableFeedbackCommands": true,
+    "DisableFirefoxAccounts": true,
     "DisableProfileRefresh": true,
     "DontCheckDefaultBrowser": true,
     "OverrideFirstRunPage": "",

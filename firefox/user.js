@@ -32,6 +32,8 @@ user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);   
 // Стартовый шум и UI: онбординг, промо-блоки, фоновые пробы сети.
 user_pref("browser.aboutwelcome.enabled", false);                                       // true -> false: онбординг при первом запуске
 user_pref("browser.startup.homepage_override.mstone", "ignore");                        // не задан (пишется после апдейта) -> "ignore": подавить страницу "что нового"
+user_pref("browser.startup.homepage", "about:blank");                                 // https://start.fedoraproject.org/ (дистро Fedora) -> about:blank: пустая страница при старте
+user_pref("browser.newtabpage.pinned", "[]");                                         // плитка start.fedoraproject.org (дистро Fedora) -> []: без закреплённой плитки Fedora
 user_pref("browser.shell.checkDefaultBrowser", false);                                  // true -> false: проверка дефолтного браузера при старте
 user_pref("browser.preferences.moreFromMozilla", false);                                // true -> false: промо-блок "Больше от Mozilla" в настройках
 user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.addons", false);   // true -> false: советы-рекомендации расширений в UI
@@ -40,6 +42,14 @@ user_pref("network.captive-portal-service.enabled", false);                     
 user_pref("network.connectivity-service.enabled", false);                               // true -> false: фоновая проба связности
 user_pref("captivedetect.canonicalURL", "");                                            // detectportal.firefox.com/canonical.html -> "": URL пробы captive portal
 user_pref("browser.uidensity", 1);                                                      // 0 (обычная) -> 1: компактная плотность UI
+// Геолокация: Geolocation API выключен, сайты не получают координаты.
+user_pref("geo.enabled", false);                                                        // true -> false: сайтам недоступна геолокация
+                                                                                        
+// Дистро-дефолты Fedora: перекрытия redhat-префов под сетап sway + VPN.
+user_pref("browser.gnome-search-provider.enabled", false);                              // true (дистро Fedora) -> false: без D-Bus-провайдера поиска GNOME, сетап sway
+user_pref("network.negotiate-auth.trusted-uris", "");                                   // "https://" (дистро Fedora) -> "": без SPNEGO-делегирования Kerberos-кред любому https
+user_pref("media.gmp-gmpopenh264.provider.enabled", true);                              // false (дистро Fedora) -> true: разрешить провайдера OpenH264 - загрузка кодека Cisco
+user_pref("media.gmp-gmpopenh264.enabled", true);                                       // false (дистро Fedora) -> true: кодек H.264 для видеозвонков WebRTC (Meet)
 
 // Агрессивные опции: каждая с трейдоффом, включается снятием // перед строкой.
 // user_pref("fission.autostart", false);                                // true -> false: минус site isolation - сайты делят процессы (риск Spectre-класса), официально непроверяемый путь; при webIsolated=2 экономия минимальна
