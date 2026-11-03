@@ -396,6 +396,22 @@ install_firefox_prefs() {
     done <<< "$profiles"
 }
 
+install_firefox_userchrome() {
+    local source="$REPOSITORY/firefox/chrome/userChrome.css" profiles profile
+
+    command -v firefox >/dev/null 2>&1 || {
+        echo "bootstrap: firefox не установлен, пропускаю настройку профилей" >&2
+        return 0
+    }
+
+    profiles="$(find_firefox_profiles)"
+    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль Firefox" >&2; return 1; }
+
+    while IFS= read -r profile; do
+        link_config "$source" "$profile/chrome/userChrome.css"
+    done <<< "$profiles"
+}
+
 install_firefox_policies() {
     local source="$REPOSITORY/firefox/policies.json"
 
@@ -507,6 +523,7 @@ main() {
     link_config "$REPOSITORY/psqlrc" "$HOME/.psqlrc"
 
     install_firefox_prefs
+    install_firefox_userchrome
     install_firefox_policies
 
     # Валидация и применение: рабочий стол оживает до загрузок
