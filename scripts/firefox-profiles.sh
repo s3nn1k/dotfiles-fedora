@@ -13,7 +13,7 @@ usage() {
     cat >&2 <<'EOF'
 usage: firefox-profiles.sh init|push|pull|reset
   init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile и зарегистрировать профили в панели
-  push            скопировать places.sqlite (закладки и история) из профилей в ~/credentials/firefox
+  push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
   pull            развернуть places.sqlite (закладки и история) из ~/credentials/firefox в профили и зарегистрировать их в панели
   reset           удалить профили: блоки profiles.ini, каталоги, строки стора панели; данные в ~/credentials/firefox остаются
 EOF
@@ -285,6 +285,44 @@ cmd_push() {
         mkdir -p "$credentials_dir"
         cp "$profile/places.sqlite" "$credentials_dir/places.sqlite"
         chmod 600 "$credentials_dir/places.sqlite"
+        local strip_output=""
+        if ! strip_output=$(python3 - "$name" "$credentials_dir/places.sqlite" 2>&1 <<'PYEOF'
+import os
+import sqlite3
+import sys
+
+name, database = sys.argv[1:3]
+
+try:
+    connection = sqlite3.connect(database)
+    before = os.path.getsize(database)
+    connection.execute("DELETE FROM moz_inputhistory")
+    connection.execute("DELETE FROM moz_historyvisits")
+    connection.execute(
+        "DELETE FROM moz_places WHERE id NOT IN (SELECT fk FROM moz_bookmarks WHERE fk IS NOT NULL)"
+    )
+    connection.execute(
+        "DELETE FROM moz_favicons WHERE id NOT IN"
+        " (SELECT favicon_id FROM moz_places WHERE favicon_id IS NOT NULL)"
+    )
+    connection.commit()
+    connection.execute("VACUUM")
+    connection.close()
+    after = os.path.getsize(database)
+except (OSError, sqlite3.Error) as error:
+    print(str(error), file=sys.stderr)
+    sys.exit(1)
+print(
+    f"firefox-profiles: {name}: places.sqlite без истории:"
+    f" {before / 1048576:.2f}МБ -> {after / 1048576:.2f}МБ"
+)
+PYEOF
+); then
+            echo "firefox-profiles: $name: история не вырезана: $strip_output" >&2
+            failed=1
+            continue
+        fi
+        echo "$strip_output"
     done
     echo "firefox-profiles: изменения в ~/credentials - закоммить и запушь"
     [[ $failed -eq 0 ]] || exit 1
