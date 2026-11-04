@@ -25,6 +25,12 @@ Telegram, настраивает gh, клонирует личные репоз�
 upstream, пропускают обновление с предупреждением, расхождение с origin останавливает
 скрипт.
 
+Питание: после 300 секунд бездействия экран блокируется, через 600 секунд выключается, а
+сон наступает через 300 секунд на батарее или 1800 секунд от сети. Bootstrap ставит
+переопределения Sway и systemd; новый контур idle стартует при входе в сессию Sway (reload
+его не перезапускает), настройки крышки logind применит после следующей перезагрузки.
+Блокировка и выключение экранов позволяют pi работать, сон приостанавливает его.
+
 После bootstrap запусти `~/dotfiles-fedora/scripts/cleanup.sh`: срезает балласт Fedora
 Sway Spin (чужие firmware, гостевые агенты гипервизоров, остатки установщика, печать,
 телеметрия) и мигрирует на Node.js 24; `--dry-run` показывает план без изменений.
@@ -37,11 +43,11 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
 
 ## Структура
 
-- `bin/` - команды, которые bootstrap ставит в `~/.local/bin` для других репозиториев:
-  credentials-setup (линки и права `~/credentials`), git-crypt-repo (unlock/lock
-  git-crypt-репозиториев), git-cred-read (git credential helper), herdr-ws (фокус и
-  переносы панелей herdr по позиции сайдбара 1..10), wt (транскрибация: ffmpeg +
-  whisper.cpp).
+- `bin/` - команды, которые bootstrap ставит в `~/.local/bin`: credentials-setup (линки и
+  права `~/credentials`), git-crypt-repo (unlock/lock git-crypt-репозиториев),
+  git-cred-read (git credential helper), herdr-ws (фокус и переносы панелей herdr по
+  позиции сайдбара 1..10), swayidle-laptop (idle-контур: блокировка, выключение экрана,
+  сон), wt (транскрибация: ffmpeg + whisper.cpp).
 - `herdr.toml` - конфиг herdr (терминальный менеджер панелей и воркспейсов); bootstrap
   линкует его в `~/.config/herdr/config.toml`.
 - `psqlrc` - UX-конфиг psql (pager off, `\x auto`, timing, промпт `user@host:port` и
