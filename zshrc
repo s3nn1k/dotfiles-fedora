@@ -15,3 +15,4 @@ alias kb-std='sudo systemctl stop keyd'
 
 # Pi
 export PATH="$HOME/.pi/agent/bin:$PATH"
+pi() { "$HOME/pi-sandbox-fedora/bin/pi-run" "$@"; }
