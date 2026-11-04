@@ -90,8 +90,24 @@ link_config() {
 
 install_command() {
     local source="$1" name="$2"
+    [[ -f "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
+    [[ -x "$source" ]] || { echo "bootstrap: $source не исполняемый; chmod +x и повтори" >&2; return 1; }
     link_config "$source" "$LOCAL_BIN/$name" || return 1
     echo "command: $LOCAL_BIN/$name -> $source"
+}
+
+install_system_file() {
+    local source="$1" destination="$2"
+    [[ -f "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
+    if sudo test -e "$destination" || sudo test -L "$destination"; then
+        if sudo test -f "$destination" && ! sudo test -L "$destination" &&
+            sudo cmp -s "$source" "$destination"; then
+            return
+        fi
+        echo "bootstrap: $destination занят чужим содержимым; перенеси вручную и повтори" >&2
+        return 1
+    fi
+    sudo install -D -m 644 "$source" "$destination"
 }
 
 # Записать фактическое имя встроенного экрана в sway/output.conf
@@ -500,7 +516,10 @@ main() {
         fontconfig google-noto-sans-fonts unzip
     sudo dnf install -y --allowerasing nodejs24 nodejs24-npm nodejs24-bin nodejs24-npm-bin
 
-    mkdir -p "$CACHE" "$HOME/.local/bin"
+    mkdir -p "$CACHE" "$LOCAL_BIN"
+    install_command "$REPOSITORY/bin/swayidle_laptop.py" swayidle-laptop
+    install_system_file "$REPOSITORY/systemd/logind/lid.conf" /etc/systemd/logind.conf.d/lid.conf
+    install_system_file "$REPOSITORY/systemd/60-deep.conf" /etc/systemd/sleep.conf.d/60-deep.conf
 
     # Имя встроенного экрана (масштаб 2.25 применяется к нему)
     local output
@@ -512,7 +531,7 @@ main() {
     # Конфиги репозитория -> симлинки; имя экрана -> sway/output.conf
     set_output_name "$REPOSITORY" "$output"
     local name
-    for name in sway/config sway/desktop.conf sway/output.conf \
+    for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
         sway/background.conf swaylock/config foot/foot.ini \
         gtk-3.0/settings.ini gtk-4.0/settings.ini; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
@@ -531,7 +550,6 @@ main() {
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
     swaymsg reload
 
-    mkdir -p "$LOCAL_BIN"
     install_command "$REPOSITORY/bin/credentials-setup.sh" credentials-setup
     install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-repo
     install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-textconv
