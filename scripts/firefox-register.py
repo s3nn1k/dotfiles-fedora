@@ -165,9 +165,20 @@ def ini_block(lines, wanted_name):
     return None
 
 
+def ini_profile_path(lines, wanted_name):
+    block = ini_block(lines, wanted_name)
+    if block is None:
+        return None
+    block_start, block_end = block
+    for line in lines[block_start + 1:block_end]:
+        key, _, value = line.partition("=")
+        if key == "Path":
+            return value
+    return None
+
+
 def register_one(name, store, profiles_root, backups_done):
     ini_path = panel_ini_path(profiles_root)
-    prefs_path = os.path.join(profiles_root, name, "prefs.js")
     store_id = store.store_id
     store_path = store.path
     with open(ini_path, encoding="utf-8", errors="surrogateescape") as handle:
@@ -176,6 +187,10 @@ def register_one(name, store, profiles_root, backups_done):
     if profile_block is None:
         raise RegistrationProblem(f"в profiles.ini нет блока профиля {name}")
     block_start, block_end = profile_block
+    profile_path = ini_profile_path(ini_lines, name)
+    if profile_path is None:
+        raise RegistrationProblem(f"в profiles.ini нет Path у профиля {name}")
+    prefs_path = os.path.join(profiles_root, profile_path, "prefs.js")
     block_store_lines = [
         line for line in ini_lines[block_start + 1:block_end] if line.startswith("StoreID=")
     ]
@@ -205,7 +220,7 @@ def register_one(name, store, profiles_root, backups_done):
     connection = sqlite3.connect(store_path)
     try:
         existing_row = connection.execute(
-            "SELECT name FROM Profiles WHERE path = ?", (name,)
+            "SELECT name FROM Profiles WHERE path = ?", (profile_path,)
         ).fetchone()
         sqlite_needed = existing_row is None or existing_row[0] != name
         sample_row = None
@@ -241,11 +256,11 @@ def register_one(name, store, profiles_root, backups_done):
                 connection.execute(
                     "INSERT INTO Profiles (path, name, avatar, themeId, themeFg, themeBg)"
                     " VALUES (?, ?, ?, ?, ?, ?)",
-                    (name, name, *sample_row),
+                    (profile_path, name, *sample_row),
                 )
             else:
                 connection.execute(
-                    "UPDATE Profiles SET name = ? WHERE path = ?", (name, name)
+                    "UPDATE Profiles SET name = ? WHERE path = ?", (name, profile_path)
                 )
             connection.commit()
     finally:
@@ -334,13 +349,26 @@ def unregister(names, profiles_root):
             warn("стор несовместим (нужна таблица Profiles с колонками path,name,avatar,themeId,themeFg,themeBg) - строки панели не удалены")
             sys.exit(1)
     ini_path = panel_ini_path(profiles_root)
+    store_row_paths = []
+    if rows_deletable:
+        if not os.path.isfile(ini_path):
+            warn("profiles.ini отсутствует - стор-строки не резолвятся и не удалены")
+        else:
+            with open(ini_path, encoding="utf-8", errors="surrogateescape") as handle:
+                ini_lines = handle.read().splitlines()
+            for name in names:
+                profile_path = ini_profile_path(ini_lines, name)
+                if profile_path is None:
+                    warn(f"{name}: в profiles.ini нет блока или Path - стор-строка не удалена")
+                    sys.exit(1)
+                store_row_paths.append(profile_path)
     if os.path.isfile(ini_path):
         drop_ini_blocks(ini_path, names)
-    if rows_deletable:
+    if rows_deletable and store_row_paths:
         connection = sqlite3.connect(store_path)
         try:
-            placeholders = ",".join("?" * len(names))
-            connection.execute(f"DELETE FROM Profiles WHERE path IN ({placeholders})", names)
+            placeholders = ",".join("?" * len(store_row_paths))
+            connection.execute(f"DELETE FROM Profiles WHERE path IN ({placeholders})", store_row_paths)
             connection.commit()
         finally:
             connection.close()
