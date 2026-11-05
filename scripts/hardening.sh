@@ -65,6 +65,12 @@ EOF
         echo "hardening: LLMNR отключён, systemd-resolved перезапущен"
     fi
 }
+enable_deny_ptrace() {
+    [[ "$(getsebool deny_ptrace 2>/dev/null)" == *"--> on"* ]] && return 0
+    sudo setsebool -P deny_ptrace on
+    echo "hardening: SELinux deny_ptrace включён"
+}
+
 mask_avahi() {
     local service_state socket_state
     service_state="$(systemctl is-enabled avahi-daemon.service 2>/dev/null || true)"
@@ -371,6 +377,7 @@ main() {
     apply_sysctl
     disable_llmnr
     mask_avahi
+    enable_deny_ptrace
     trim_firewall_zone
     enable_security_updates
     configure_authselect
