@@ -17,7 +17,7 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ~/dotfiles-fedora/scripts/bootstrap.sh
 ```
 
-Скрипт идемпотентен и спросит sudo-пароль. Он ставит пакеты dnf, раскладывает
+Скрипт идемпотентен и спросит sudo-пароль. Он обновляет систему через dnf upgrade и ставит пакеты dnf, раскладывает
 конфиги-симлинки, применяет security-hardening (sysctl, LLMNR off, avahi mask, срез
 ssh/mdns из firewall, автообновления безопасности), поднимает VPN mihomo
 (https-подписка обязательна), ставит официальный Telegram, настраивает gh, клонирует
