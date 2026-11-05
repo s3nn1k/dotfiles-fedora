@@ -60,6 +60,7 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
   срез ssh/mdns из firewall, автообновления безопасности, PAM, sudo-логи, gpgcheck,
   banners, auditd, mount-флаги).
 - `scripts/firefox-profiles.sh` - перенос закладок Firefox без истории между машинами:
-  init/push/pull/reset через `~/credentials/firefox`; профили появляются в панели Firefox.
+  reset (полный вайп профилей) -> init -> первый запуск firefox -P <slug> -> init -> pull
+  через `~/credentials/firefox`; профили появляются в панели Firefox.
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
   здесь не настраивается.
