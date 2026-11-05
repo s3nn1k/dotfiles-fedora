@@ -13,10 +13,10 @@ fail() {
 usage() {
     cat >&2 <<'EOF'
 usage: firefox-profiles.sh init|push|pull|reset
-  init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile и зарегистрировать их в панели Firefox
+  init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile, линковать user.js и chrome, зарегистрировать их в панели Firefox
   push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
   pull            развернуть places.sqlite (закладки) из ~/credentials/firefox в профили и зарегистрировать их в панели (затирает локальные изменения - сначала push; Firefox получателя не старее источника)
-  reset           удалить профили: ini-блоки, строки панели и каталоги; данные в ~/credentials/firefox остаются; на свежей машине панель инициализируется первым запуском Firefox - повтори init
+  reset           полный вайп всех профилей Firefox: ini-блоки, строки панели, каталоги, installs.ini и Profile Groups; credentials остаются; порядок развёртывания: init, первый запуск firefox -P <слаг>, init, pull
 EOF
     exit 1
 }
@@ -108,6 +108,19 @@ ini_has_profile_block() {
     ' "$ini"
 }
 
+link_profile_entry() {
+    local source="$1" target="$2" name="$3"
+    if [[ -L "$target" ]]; then
+        ln -sfn "$source" "$target"
+        return
+    fi
+    if [[ -e "$target" ]]; then
+        echo "firefox-profiles: $name: $target уже существует и не симлинк - не тронут"
+        return
+    fi
+    ln -s "$source" "$target"
+}
+
 cmd_init() {
     require_firefox_closed
     command -v firefox >/dev/null || fail "firefox не найден в PATH"
@@ -120,6 +133,8 @@ cmd_init() {
             firefox -CreateProfile "$name $PROFILES_ROOT/$name" >/dev/null 2>&1 || fail "не создан профиль: $name"
             echo "firefox-profiles: создан профиль: $PROFILES_ROOT/$name"
         fi
+        link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$PROFILES_ROOT/$name/user.js" "$name"
+        link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$PROFILES_ROOT/$name/chrome" "$name"
     done
     "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
     [[ $failed -eq 0 ]] || exit 1
@@ -222,18 +237,94 @@ cmd_pull() {
     [[ $failed -eq 0 ]] || exit 1
 }
 
+remove_profile_dir() {
+    local root="$1" path="$2" dir
+    if [[ "/$path/" == *"/../"* ]]; then
+        echo "firefox-profiles: $path: путь содержит '..' - каталог не тронут" >&2
+        return 1
+    fi
+    if [[ "$path" == /* ]]; then
+        if [[ "$path" != "$HOME"/* ]]; then
+            echo "firefox-profiles: $path: нестандартный путь вне домашнего каталога - удали вручную: $path" >&2
+            return 1
+        fi
+        dir="$path"
+    else
+        dir="$root/$path"
+    fi
+    if [[ -z "$path" || "$path" == "." || "$dir" == "$root" || "$dir" == "$HOME" || "$dir" == "/" ]]; then
+        echo "firefox-profiles: $dir: цель совпадает с защищаемым каталогом - не тронут" >&2
+        return 1
+    fi
+    rm -rf "$dir"
+}
+
 cmd_reset() {
     require_firefox_closed
-    profile_names
-    if ! "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" unregister "${PROFILE_NAMES[@]}"; then
-        fail "регистратор не справился - профили не удалены"
+    local ini="$PROFILES_ROOT/profiles.ini"
+    local -a unregister_names=() profile_dirs=()
+    local name path dir skipped=0
+    if [[ -f "$ini" ]]; then
+        while IFS=$'\t' read -r name path; do
+            unregister_names+=("$name")
+            profile_dirs+=("$path")
+        done < <(awk '
+            /^\[/ {
+                if (in_profile) {
+                    if (name != "" && path != "") {
+                        print name "\t" path
+                    } else {
+                        incomplete++
+                    }
+                }
+                in_profile = ($0 ~ /^\[Profile[0-9]+\]$/)
+                name = ""
+                path = ""
+                next
+            }
+            in_profile && /=/ {
+                eq = index($0, "=")
+                key = substr($0, 1, eq - 1)
+                value = substr($0, eq + 1)
+                if (key == "Name") {
+                    name = value
+                } else if (key == "Path") {
+                    path = value
+                }
+            }
+            END {
+                if (in_profile) {
+                    if (name != "" && path != "") {
+                        print name "\t" path
+                    } else {
+                        incomplete++
+                    }
+                }
+                if (incomplete > 0) {
+                    print "firefox-profiles: " incomplete " [Profile]-блоков без Name/Path - их каталоги не тронуты" > "/dev/stderr"
+                }
+            }
+        ' "$ini")
+        if [[ ${#unregister_names[@]} -gt 0 ]]; then
+            if ! "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" unregister "${unregister_names[@]}"; then
+                fail "регистратор не справился - профили не удалены"
+            fi
+        fi
     fi
-    local name
-    for name in "${PROFILE_NAMES[@]}"; do
-        rm -rf "$PROFILES_ROOT/$name"
-    done
-    echo "firefox-profiles: удалены профили: ${PROFILE_NAMES[*]}; повтори init (+pull)"
-    echo "firefox-profiles: секции [Install] в profiles.ini остаются с Default= на удалённый каталог: Firefox при следующем старте создаст новый пустой дефолтный профиль"
+    if [[ ${#profile_dirs[@]} -gt 0 ]]; then
+        for path in "${profile_dirs[@]}"; do
+            if ! remove_profile_dir "$PROFILES_ROOT" "$path"; then
+                skipped=$((skipped + 1))
+            fi
+        done
+    fi
+    rm -f "$PROFILES_ROOT/profiles.ini" "$PROFILES_ROOT/installs.ini"
+    rm -rf "$PROFILES_ROOT/Profile Groups"
+    find "$PROFILES_ROOT" -mindepth 1 -type d -empty -delete || echo "firefox-profiles: не удалось удалить пустые каталоги в $PROFILES_ROOT" >&2
+    echo "firefox-profiles: Firefox пуст; порядок развёртывания: init, первый запуск firefox -P <слаг>, повторный init, pull"
+    if (( skipped > 0 )); then
+        echo "firefox-profiles: пропущено каталогов: $skipped - удали вручную (см. предупреждения выше)"
+    fi
 }
 
 case "${1:-}" in

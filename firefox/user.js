@@ -42,6 +42,7 @@ user_pref("browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features", 
 user_pref("network.captive-portal-service.enabled", false);                             // true -> false: фоновая проба captive portal
 user_pref("network.connectivity-service.enabled", false);                               // true -> false: фоновая проба связности
 user_pref("captivedetect.canonicalURL", "");                                            // detectportal.firefox.com/canonical.html -> "": URL пробы captive portal
+user_pref("browser.bookmarks.restore_default_bookmarks", false);                       // true -> false: не импортировать дефолтные закладки при развёртывании профиля
 user_pref("browser.uidensity", 1);                                                      // 0 (обычная) -> 1: компактная плотность UI
 // Геолокация: Geolocation API выключен, сайты не получают координаты.
 user_pref("geo.enabled", false);                                                        // true -> false: сайтам недоступна геолокация
@@ -58,6 +59,7 @@ user_pref("network.dns.disablePrefetch", true);                                 
 
 // Тёмная тема: интерфейс и цвет страниц.
 user_pref("layout.css.prefers-color-scheme.content-override", 2);                       // 0 (системная) -> 2: страницы отдают тёмную версию
+user_pref("extensions.activeThemeID", "firefox-compact-dark@mozilla.org");              // default@mozilla.org -> firefox-compact-dark@mozilla.org: встроенная тёмная тема интерфейса, применяется сама при старте профиля
 
 // Защита: трекеры и проверка загрузок.
 user_pref("browser.contentblocking.category", "strict");                                // standard -> strict: ETP-строгий, меньше фоновых трекеров; сломанный сайт лечится щитом в urlbar
