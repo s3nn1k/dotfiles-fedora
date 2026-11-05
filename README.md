@@ -58,7 +58,7 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
 - `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
   mihomo-apply.sh (конфиг и служба mihomo), hardening.sh (sysctl, LLMNR off, avahi mask,
   срез ssh/mdns из firewall, автообновления безопасности, PAM, sudo-логи, gpgcheck,
-  banners).
+  banners, auditd, mount-флаги).
 - `scripts/firefox-profiles.sh` - перенос закладок Firefox (без истории) и cookies между
   машинами: init/push/pull/reset через `~/credentials/firefox`; профили появляются в
   панели Firefox.
