@@ -57,6 +57,7 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
   postgres-креды из `~/credentials` в `~/.pgpass` и `~/.pg_service.conf`.
 - `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
   mihomo-apply.sh (конфиг и служба mihomo), hardening.sh (sysctl, LLMNR off, avahi mask,
-  срез ssh/mdns из firewall, автообновления безопасности).
+  срез ssh/mdns из firewall, автообновления безопасности, PAM, sudo-логи, gpgcheck,
+  banners).
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
   здесь не настраивается.

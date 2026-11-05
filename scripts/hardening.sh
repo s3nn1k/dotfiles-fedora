@@ -123,6 +123,121 @@ EOF
         echo "hardening: автообновления безопасности включены (dnf5-automatic.timer)"
     fi
 }
+configure_authselect() {
+    local -a profile=(local with-faillock with-pwhistory without-nullok with-silent-lastlog with-mdns4 with-fingerprint)
+    local applied current feature
+    current="$(authselect current 2>/dev/null || true)"
+    for feature in with-faillock with-pwhistory without-nullok; do
+        if [[ "$current" != *"$feature"* ]]; then
+            sudo authselect select "${profile[@]}" --force >/dev/null
+            applied="$(authselect current | tr '\n' ' ')"
+            echo "hardening: authselect применён: $applied"
+            return 0
+        fi
+    done
+}
+configure_faillock() {
+    if install_root_file_if_changed "/etc/security/faillock.conf" <<'EOF'
+deny = 3
+fail_interval = 900
+unlock_time = 900
+silent
+audit
+EOF
+    then
+        echo "hardening: faillock настроен: /etc/security/faillock.conf"
+    fi
+}
+configure_pwquality() {
+    if install_root_file_if_changed "/etc/security/pwquality.conf" <<'EOF'
+minlen = 14
+minclass = 4
+maxrepeat = 3
+maxsequence = 3
+difok = 8
+dictcheck = 1
+enforcing = 1
+enforce_for_root
+EOF
+    then
+        echo "hardening: pwquality настроен: /etc/security/pwquality.conf"
+    fi
+}
+configure_pwhistory() {
+    if install_root_file_if_changed "/etc/security/pwhistory.conf" <<'EOF'
+remember = 24
+enforce_for_root
+EOF
+    then
+        echo "hardening: pwhistory настроен: /etc/security/pwhistory.conf"
+    fi
+}
+configure_sudo() {
+    local sudoers="/etc/sudoers.d/50-hardening" staged="/etc/sudoers.d/50-hardening.new"
+    cat > "$STAGING_FILE" <<'EOF'
+Defaults log_input, log_output
+Defaults iolog_dir=/var/log/sudo-io/%{user}
+Defaults logfile=/var/log/sudo.log
+Defaults log_exit_status
+Defaults use_pty
+Defaults timestamp_timeout=5
+EOF
+    if sudo cmp -s "$STAGING_FILE" "$sudoers"; then
+        return 0
+    fi
+    sudo install -d -m 755 "$(dirname "$sudoers")"
+    sudo install -m 440 "$STAGING_FILE" "$staged"
+    if ! sudo visudo -cf "$staged" >/dev/null; then
+        sudo rm -f "$staged"
+        echo "hardening: visudo отклонил $staged; файл удалён" >&2
+        return 1
+    fi
+    sudo mv "$staged" "$sudoers"
+    echo "hardening: sudo-логи включены: $sudoers прошёл visudo (0440)"
+}
+configure_dnf_and_banners() {
+    local dnf_conf="/etc/dnf/dnf.conf" grep_exit=0 matched normalized
+    local -a appended=()
+    local key
+    [[ -f "$dnf_conf" ]] || { echo "hardening: нет $dnf_conf" >&2; return 1; }
+    for key in gpgcheck localpkg_gpgcheck; do
+        grep_exit=0
+        matched="$(sudo grep -E "^[[:space:]]*${key}[[:space:]]*=" "$dnf_conf")" || grep_exit=$?
+        case "$grep_exit" in
+            1)
+                printf '%s\n' "$key=1" | sudo tee -a "$dnf_conf" >/dev/null
+                appended+=("$key")
+                ;;
+            0)
+                normalized="${matched//[[:space:]]/}"
+                [[ "$normalized" == "$key=1" ]] || {
+                    matched="${matched//$'\n'/; }"
+                    echo "hardening: $dnf_conf содержит '$matched', ожидалось '$key=1'; исправь вручную и перезапусти" >&2
+                    return 1
+                }
+                ;;
+            *)
+                echo "hardening: grep упал на $dnf_conf (exit $grep_exit), проверка $key прервана" >&2
+                return 1
+                ;;
+        esac
+    done
+    if ((${#appended[@]} > 0)); then
+        echo "hardening: $dnf_conf дополнен: ${appended[*]}"
+    fi
+    if install_root_file_if_changed "/etc/issue" <<'EOF'
+Authorized users only. All activity is logged.
+EOF
+    then
+        echo "hardening: баннер /etc/issue обновлён"
+    fi
+    if install_root_file_if_changed "/etc/issue.net" <<'EOF'
+Authorized users only. All activity is logged.
+EOF
+    then
+        echo "hardening: баннер /etc/issue.net обновлён"
+    fi
+}
 main() {
     require_fedora
     sudo -v
@@ -133,6 +248,12 @@ main() {
     mask_avahi
     trim_firewall_zone
     enable_security_updates
+    configure_authselect
+    configure_faillock
+    configure_pwquality
+    configure_pwhistory
+    configure_sudo
+    configure_dnf_and_banners
     echo "hardening: готово"
 }
 
