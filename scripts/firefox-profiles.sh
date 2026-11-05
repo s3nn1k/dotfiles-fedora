@@ -14,8 +14,8 @@ usage() {
     cat >&2 <<'EOF'
 usage: firefox-profiles.sh init|push|pull|reset
   init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile и зарегистрировать их в панели Firefox
-  push            скопировать places.sqlite (закладки; история вырезается) и cookies.sqlite из профилей в ~/credentials/firefox
-  pull            развернуть places.sqlite (закладки) и cookies.sqlite из ~/credentials/firefox в профили и зарегистрировать их в панели (затирает локальные изменения - сначала push; Firefox получателя не старее источника)
+  push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
+  pull            развернуть places.sqlite (закладки) из ~/credentials/firefox в профили и зарегистрировать их в панели (затирает локальные изменения - сначала push; Firefox получателя не старее источника)
   reset           удалить профили: ini-блоки, строки панели и каталоги; данные в ~/credentials/firefox остаются; на свежей машине панель инициализируется первым запуском Firefox - повтори init
 EOF
     exit 1
@@ -132,7 +132,7 @@ cmd_push() {
     fi
     profile_names
     local failed=0
-    local name profile credentials_dir database strip_output
+    local name profile credentials_dir strip_output
     for name in "${PROFILE_NAMES[@]}"; do
         profile="$PROFILES_ROOT/$name"
         credentials_dir="$CREDENTIALS_FIREFOX/$name"
@@ -142,36 +142,32 @@ cmd_push() {
             continue
         fi
         mkdir -p "$credentials_dir"
-        for database in places.sqlite cookies.sqlite; do
-            if [[ ! -f "$profile/$database" ]]; then
-                echo "firefox-profiles: $name: нет $database в профиле" >&2
-                failed=1
-                continue
-            fi
-            ensure_clean_sqlite "$profile/$database"
-            if is_git_crypt_locked "$credentials_dir/$database"; then
-                fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
-            fi
-            if ! cp "$profile/$database" "$credentials_dir/$database.tmp"; then
-                rm -f "$credentials_dir/$database.tmp"
-                fail "не скопирован $database: $profile/$database"
-            fi
-            if [[ "$database" == places.sqlite ]]; then
-                strip_output=""
-                if ! strip_output=$("$SCRIPT_DIR/firefox-strip.py" "$name" "$credentials_dir/places.sqlite.tmp" 2>&1); then
-                    echo "firefox-profiles: $name: история не вырезана: $strip_output" >&2
-                    rm -f "$credentials_dir/places.sqlite.tmp"
-                    failed=1
-                    continue
-                fi
-                echo "$strip_output"
-            fi
-            chmod 600 "$credentials_dir/$database.tmp"
-            mv "$credentials_dir/$database.tmp" "$credentials_dir/$database" || {
-                rm -f "$credentials_dir/$database.tmp"
-                fail "не заменён $database: $credentials_dir/$database"
-            }
-        done
+        if [[ ! -f "$profile/places.sqlite" ]]; then
+            echo "firefox-profiles: $name: нет places.sqlite в профиле" >&2
+            failed=1
+            continue
+        fi
+        ensure_clean_sqlite "$profile/places.sqlite"
+        if is_git_crypt_locked "$credentials_dir/places.sqlite"; then
+            fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
+        fi
+        if ! cp "$profile/places.sqlite" "$credentials_dir/places.sqlite.tmp"; then
+            rm -f "$credentials_dir/places.sqlite.tmp"
+            fail "не скопирован places.sqlite: $profile"
+        fi
+        strip_output=""
+        if ! strip_output=$("$SCRIPT_DIR/firefox-strip.py" "$name" "$credentials_dir/places.sqlite.tmp" 2>&1); then
+            echo "firefox-profiles: $name: история не вырезана: $strip_output" >&2
+            rm -f "$credentials_dir/places.sqlite.tmp"
+            failed=1
+            continue
+        fi
+        echo "$strip_output"
+        chmod 600 "$credentials_dir/places.sqlite.tmp"
+        mv "$credentials_dir/places.sqlite.tmp" "$credentials_dir/places.sqlite" || {
+            rm -f "$credentials_dir/places.sqlite.tmp"
+            fail "не заменён places.sqlite: $credentials_dir"
+        }
     done
     [[ $failed -eq 0 ]] || exit 1
     echo "firefox-profiles: изменения в ~/credentials - закоммить и запушь"
@@ -181,50 +177,44 @@ cmd_pull() {
     require_firefox_closed
     profile_names
     local failed=0
-    local name profile credentials_dir database local_version credentials_version slug_copied
+    local name profile credentials_dir local_version credentials_version
     local -a pulled=()
     for name in "${PROFILE_NAMES[@]}"; do
         profile="$PROFILES_ROOT/$name"
         credentials_dir="$CREDENTIALS_FIREFOX/$name"
-        slug_copied=0
         if [[ ! -d "$profile" ]]; then
             echo "firefox-profiles: $name: профиль не создан: сначала init ($profile)" >&2
             failed=1
             continue
         fi
-        for database in places.sqlite cookies.sqlite; do
-            if [[ ! -f "$credentials_dir/$database" ]]; then
-                echo "firefox-profiles: $name: нет $database в $credentials_dir" >&2
-                failed=1
-                continue
-            fi
-            if is_git_crypt_locked "$credentials_dir/$database"; then
-                fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
-            fi
-            ensure_clean_sqlite "$profile/$database"
-            if [[ -f "$profile/$database" ]]; then
-                cp "$profile/$database" "$profile/$database.pre-pull" || fail "не сохранён pre-pull бэкап: $profile/$database"
-                local_version="$(sqlite_user_version "$profile/$database")" || fail "не прочитан user_version: $profile/$database"
-                credentials_version="$(sqlite_user_version "$credentials_dir/$database")" || fail "не прочитан user_version: $credentials_dir/$database"
-                if (( credentials_version > local_version )); then
-                    echo "firefox-profiles: $name: $database: источник новее Firefox получателя - база может быть отброшена; обнови Firefox и повтори pull"
-                fi
-            fi
-            if ! cp "$credentials_dir/$database" "$profile/$database.tmp"; then
-                rm -f "$profile/$database.tmp"
-                fail "не скопирован $database: $credentials_dir/$database"
-            fi
-            chmod 600 "$profile/$database.tmp"
-            mv "$profile/$database.tmp" "$profile/$database" || {
-                rm -f "$profile/$database.tmp"
-                fail "не заменён $database: $profile/$database"
-            }
-            slug_copied=1
-            echo "firefox-profiles: $name: скопирован $database"
-        done
-        if (( slug_copied )); then
-            pulled+=("$name")
+        if [[ ! -f "$credentials_dir/places.sqlite" ]]; then
+            echo "firefox-profiles: $name: нет places.sqlite в $credentials_dir" >&2
+            failed=1
+            continue
         fi
+        if is_git_crypt_locked "$credentials_dir/places.sqlite"; then
+            fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
+        fi
+        ensure_clean_sqlite "$profile/places.sqlite"
+        if [[ -f "$profile/places.sqlite" ]]; then
+            cp "$profile/places.sqlite" "$profile/places.sqlite.pre-pull" || fail "не сохранён pre-pull бэкап: $profile/places.sqlite"
+            local_version="$(sqlite_user_version "$profile/places.sqlite")" || fail "не прочитан user_version: $profile/places.sqlite"
+            credentials_version="$(sqlite_user_version "$credentials_dir/places.sqlite")" || fail "не прочитан user_version: $credentials_dir/places.sqlite"
+            if (( credentials_version > local_version )); then
+                echo "firefox-profiles: $name: источник новее Firefox получателя - база может быть отброшена; обнови Firefox и повтори pull"
+            fi
+        fi
+        if ! cp "$credentials_dir/places.sqlite" "$profile/places.sqlite.tmp"; then
+            rm -f "$profile/places.sqlite.tmp"
+            fail "не скопирован places.sqlite: $credentials_dir"
+        fi
+        chmod 600 "$profile/places.sqlite.tmp"
+        mv "$profile/places.sqlite.tmp" "$profile/places.sqlite" || {
+            rm -f "$profile/places.sqlite.tmp"
+            fail "не заменён places.sqlite: $profile"
+        }
+        echo "firefox-profiles: $name: скопирован places.sqlite"
+        pulled+=("$name")
     done
     if [[ ${#pulled[@]} -gt 0 ]]; then
         "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" register "${pulled[@]}" || failed=1
