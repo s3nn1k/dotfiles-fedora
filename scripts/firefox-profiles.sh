@@ -13,10 +13,10 @@ fail() {
 usage() {
     cat >&2 <<'EOF'
 usage: firefox-profiles.sh init|push|pull|reset
-  init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile, линковать user.js и chrome, зарегистрировать их в панели Firefox
+  init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile (каталог по profiles.ini), линковать user.js и chrome, зарегистрировать их в панели Firefox
   push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
   pull            развернуть places.sqlite (закладки) из ~/credentials/firefox в профили и зарегистрировать их в панели (затирает локальные изменения - сначала push; Firefox получателя не старее источника)
-  reset           полный вайп всех профилей Firefox: ini-блоки, строки панели, каталоги, installs.ini и Profile Groups; credentials остаются; порядок развёртывания: init, первый запуск firefox -P <слаг>, init, pull
+  reset           полный вайп всех профилей Firefox: ini-блоки, строки панели, каталоги, installs.ini и Profile Groups; credentials остаются; воссоздаёт скелет (профили без регистрации); порядок: первый запуск firefox -P <слаг>, затем init (регистрация) и pull
 EOF
     exit 1
 }
@@ -108,6 +108,76 @@ ini_has_profile_block() {
     ' "$ini"
 }
 
+resolve_profile_dir() {
+    local ini="$1" name="$2"
+    [[ -f "$ini" ]] || return 0
+    MATCH_PROFILE_NAME="$name" awk '
+        BEGIN {
+            match_name = ENVIRON["MATCH_PROFILE_NAME"]
+        }
+        /^\[/ {
+            if (in_profile && (block_name == match_name || block_component == match_name)) {
+                print block_path
+                found = 1
+                exit
+            }
+            in_profile = ($0 ~ /^\[Profile[0-9]+\]$/)
+            block_name = ""
+            block_path = ""
+            block_component = ""
+            next
+        }
+        in_profile && /=/ {
+            eq = index($0, "=")
+            key = substr($0, 1, eq - 1)
+            value = substr($0, eq + 1)
+            if (key == "Name") {
+                block_name = value
+            } else if (key == "Path") {
+                block_path = value
+                block_component = value
+                sub(/.*\//, "", block_component)
+            }
+        }
+        END {
+            if (!found && in_profile && (block_name == match_name || block_component == match_name)) {
+                print block_path
+            }
+        }
+    ' "$ini"
+}
+
+contained_profile_path() {
+    local root="$1" path="$2" dir
+    if [[ "/$path/" == *"/../"* ]]; then
+        echo "firefox-profiles: $path: путь содержит '..' - операция пропущена" >&2
+        return 1
+    fi
+    if [[ "$path" == /* ]]; then
+        if [[ "$path" != "$HOME"/* ]]; then
+            echo "firefox-profiles: $path: нестандартный путь вне домашнего каталога - операция пропущена" >&2
+            return 1
+        fi
+        dir="$path"
+    else
+        dir="$root/$path"
+    fi
+    if [[ -z "$path" || "$path" == "." || "$dir" == "$root" || "$dir" == "$HOME" || "$dir" == "/" ]]; then
+        echo "firefox-profiles: $dir: цель совпадает с защищаемым каталогом - операция пропущена" >&2
+        return 1
+    fi
+    printf '%s\n' "$dir"
+}
+
+prepare_profile_dir() {
+    local root="$1" path="$2" dir
+    if ! dir="$(contained_profile_path "$root" "$path")"; then
+        return 1
+    fi
+    mkdir -p "$dir"
+    printf '%s\n' "$dir"
+}
+
 link_profile_entry() {
     local source="$1" target="$2" name="$3"
     if [[ -L "$target" ]]; then
@@ -127,14 +197,42 @@ cmd_init() {
     profile_names
     local ini="$PROFILES_ROOT/profiles.ini"
     local failed=0
-    local name
+    local name profile_path profile_dir has_block has_dir
     for name in "${PROFILE_NAMES[@]}"; do
-        if [[ ! -d "$PROFILES_ROOT/$name" ]] || ! ini_has_profile_block "$ini" "$name"; then
-            firefox -CreateProfile "$name $PROFILES_ROOT/$name" >/dev/null 2>&1 || fail "не создан профиль: $name"
-            echo "firefox-profiles: создан профиль: $PROFILES_ROOT/$name"
+        has_block=0
+        has_dir=0
+        profile_path="$(resolve_profile_dir "$ini" "$name")"
+        if [[ -n "$profile_path" ]]; then
+            if ! profile_dir="$(contained_profile_path "$PROFILES_ROOT" "$profile_path")"; then
+                profile_dir=""
+            fi
+            if [[ -n "$profile_dir" && -d "$profile_dir" ]]; then
+                has_dir=1
+            fi
         fi
-        link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$PROFILES_ROOT/$name/user.js" "$name"
-        link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$PROFILES_ROOT/$name/chrome" "$name"
+        if ini_has_profile_block "$ini" "$name"; then
+            has_block=1
+        fi
+        if (( has_block == 0 && has_dir == 0 )); then
+            firefox -CreateProfile "$name" >/dev/null 2>&1 || fail "не создан профиль: $name"
+            echo "firefox-profiles: создан профиль: $name"
+            PROFILES_ROOT="$(profiles_root)"
+            ini="$PROFILES_ROOT/profiles.ini"
+            profile_path="$(resolve_profile_dir "$ini" "$name")"
+            if [[ -z "$profile_path" ]]; then
+                fail "не удалось разрешить каталог созданного профиля: $name"
+            fi
+        fi
+        if [[ -z "$profile_path" ]]; then
+            echo "firefox-profiles: $name: в ini-блоке нет Path - user.js и chrome не линкованы" >&2
+            continue
+        fi
+        if ! profile_dir="$(prepare_profile_dir "$PROFILES_ROOT" "$profile_path")"; then
+            echo "firefox-profiles: $name: user.js и chrome не линкованы" >&2
+            continue
+        fi
+        link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$profile_dir/user.js" "$name"
+        link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$profile_dir/chrome" "$name"
     done
     "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
     [[ $failed -eq 0 ]] || exit 1
@@ -147,10 +245,20 @@ cmd_push() {
     fi
     profile_names
     local failed=0
-    local name profile credentials_dir strip_output
+    local ini="$PROFILES_ROOT/profiles.ini"
+    local name profile credentials_dir strip_output profile_path
     for name in "${PROFILE_NAMES[@]}"; do
-        profile="$PROFILES_ROOT/$name"
         credentials_dir="$CREDENTIALS_FIREFOX/$name"
+        profile_path="$(resolve_profile_dir "$ini" "$name")"
+        if [[ -z "$profile_path" ]]; then
+            echo "firefox-profiles: $name: профиль отсутствует (нет блока в profiles.ini)" >&2
+            failed=1
+            continue
+        fi
+        if ! profile="$(contained_profile_path "$PROFILES_ROOT" "$profile_path")"; then
+            failed=1
+            continue
+        fi
         if [[ ! -d "$profile" ]]; then
             echo "firefox-profiles: $name: профиль отсутствует: $profile" >&2
             failed=1
@@ -192,13 +300,14 @@ cmd_pull() {
     require_firefox_closed
     profile_names
     local failed=0
-    local name profile credentials_dir local_version credentials_version
+    local ini="$PROFILES_ROOT/profiles.ini"
+    local name profile credentials_dir profile_path local_version credentials_version
     local -a pulled=()
     for name in "${PROFILE_NAMES[@]}"; do
-        profile="$PROFILES_ROOT/$name"
         credentials_dir="$CREDENTIALS_FIREFOX/$name"
-        if [[ ! -d "$profile" ]]; then
-            echo "firefox-profiles: $name: профиль не создан: сначала init ($profile)" >&2
+        profile_path="$(resolve_profile_dir "$ini" "$name")"
+        if [[ -z "$profile_path" ]]; then
+            echo "firefox-profiles: $name: профиль не создан: сначала init" >&2
             failed=1
             continue
         fi
@@ -210,6 +319,10 @@ cmd_pull() {
         if is_git_crypt_locked "$credentials_dir/places.sqlite"; then
             fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
         fi
+        if ! profile="$(contained_profile_path "$PROFILES_ROOT" "$profile_path")"; then
+            failed=1
+            continue
+        fi
         ensure_clean_sqlite "$profile/places.sqlite"
         if [[ -f "$profile/places.sqlite" ]]; then
             cp "$profile/places.sqlite" "$profile/places.sqlite.pre-pull" || fail "не сохранён pre-pull бэкап: $profile/places.sqlite"
@@ -219,6 +332,7 @@ cmd_pull() {
                 echo "firefox-profiles: $name: источник новее Firefox получателя - база может быть отброшена; обнови Firefox и повтори pull"
             fi
         fi
+        mkdir -p "$profile"
         if ! cp "$credentials_dir/places.sqlite" "$profile/places.sqlite.tmp"; then
             rm -f "$profile/places.sqlite.tmp"
             fail "не скопирован places.sqlite: $credentials_dir"
@@ -239,21 +353,7 @@ cmd_pull() {
 
 remove_profile_dir() {
     local root="$1" path="$2" dir
-    if [[ "/$path/" == *"/../"* ]]; then
-        echo "firefox-profiles: $path: путь содержит '..' - каталог не тронут" >&2
-        return 1
-    fi
-    if [[ "$path" == /* ]]; then
-        if [[ "$path" != "$HOME"/* ]]; then
-            echo "firefox-profiles: $path: нестандартный путь вне домашнего каталога - удали вручную: $path" >&2
-            return 1
-        fi
-        dir="$path"
-    else
-        dir="$root/$path"
-    fi
-    if [[ -z "$path" || "$path" == "." || "$dir" == "$root" || "$dir" == "$HOME" || "$dir" == "/" ]]; then
-        echo "firefox-profiles: $dir: цель совпадает с защищаемым каталогом - не тронут" >&2
+    if ! dir="$(contained_profile_path "$root" "$path")"; then
         return 1
     fi
     rm -rf "$dir"
@@ -321,7 +421,34 @@ cmd_reset() {
     rm -f "$PROFILES_ROOT/profiles.ini" "$PROFILES_ROOT/installs.ini"
     rm -rf "$PROFILES_ROOT/Profile Groups"
     find "$PROFILES_ROOT" -mindepth 1 -type d -empty -delete || echo "firefox-profiles: не удалось удалить пустые каталоги в $PROFILES_ROOT" >&2
-    echo "firefox-profiles: Firefox пуст; порядок развёртывания: init, первый запуск firefox -P <слаг>, повторный init, pull"
+    if [[ -d "$CREDENTIALS_FIREFOX" ]]; then
+        profile_names
+        local skeleton_path skeleton_dir skeleton_skipped=0
+        for name in "${PROFILE_NAMES[@]}"; do
+            firefox -CreateProfile "$name" >/dev/null 2>&1 || fail "не создан профиль: $name"
+        done
+        PROFILES_ROOT="$(profiles_root)"
+        ini="$PROFILES_ROOT/profiles.ini"
+        for name in "${PROFILE_NAMES[@]}"; do
+            skeleton_path="$(resolve_profile_dir "$ini" "$name")"
+            if [[ -z "$skeleton_path" ]]; then
+                fail "не удалось разрешить каталог созданного профиля: $name"
+            fi
+            if ! skeleton_dir="$(prepare_profile_dir "$PROFILES_ROOT" "$skeleton_path")"; then
+                skeleton_skipped=$((skeleton_skipped + 1))
+                continue
+            fi
+            link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$skeleton_dir/user.js" "$name"
+            link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$skeleton_dir/chrome" "$name"
+        done
+        echo "firefox-profiles: скелет воссоздан: профили созданы, user.js и chrome линкованы"
+        if (( skeleton_skipped > 0 )); then
+            echo "firefox-profiles: пропущено каталогов: $skeleton_skipped - создай вручную (см. предупреждения выше)"
+        fi
+    else
+        echo "firefox-profiles: скелет не воссоздан, обычный запуск Firefox создаст дефолтный профиль" >&2
+    fi
+    echo "firefox-profiles: порядок развёртывания: первый запуск firefox -P <слаг> (или выбор в менеджере), затем init (регистрация) и pull"
     if (( skipped > 0 )); then
         echo "firefox-profiles: пропущено каталогов: $skipped - удали вручную (см. предупреждения выше)"
     fi
