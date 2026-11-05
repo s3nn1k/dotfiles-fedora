@@ -510,6 +510,8 @@ main() {
     sudo -v
 
     # Системные пакеты Fedora: git, shell, редактор, языки, утилиты, шрифты
+    sudo dnf upgrade -y
+
     sudo dnf install -y git git-crypt gh glab curl jq make gcc gcc-c++ golang postgresql \
         python3 pipx uv neovim ripgrep fd-find wl-clipboard acl kubectl \
         zsh zsh-autosuggestions zsh-syntax-highlighting util-linux-user \
