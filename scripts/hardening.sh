@@ -140,7 +140,7 @@ configure_faillock() {
     if install_root_file_if_changed "/etc/security/faillock.conf" <<'EOF'
 deny = 3
 fail_interval = 900
-unlock_time = 900
+unlock_time = 300
 silent
 audit
 EOF
