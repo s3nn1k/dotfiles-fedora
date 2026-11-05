@@ -9,10 +9,10 @@ require_fedora() {
 }
 install_root_file_if_changed() {
     local destination="$1"
-    sudo install -d -m 755 "$(dirname "$destination")"
     cat > "$STAGING_FILE"
-    sudo cmp -s "$STAGING_FILE" "$destination" && return 1
-    sudo install -m 644 "$STAGING_FILE" "$destination"
+    sudo install -d -m 755 "$(dirname "$destination")" < /dev/null
+    sudo cmp -s "$STAGING_FILE" "$destination" < /dev/null && return 1
+    sudo install -m 644 "$STAGING_FILE" "$destination" < /dev/null
 }
 apply_sysctl() {
     if install_root_file_if_changed "/etc/sysctl.d/99-hardening.conf" <<'EOF'
