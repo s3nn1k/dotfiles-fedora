@@ -520,6 +520,7 @@ main() {
     install_command "$REPOSITORY/bin/swayidle_laptop.py" swayidle-laptop
     install_system_file "$REPOSITORY/systemd/logind/lid.conf" /etc/systemd/logind.conf.d/lid.conf
     install_system_file "$REPOSITORY/systemd/60-deep.conf" /etc/systemd/sleep.conf.d/60-deep.conf
+    "$REPOSITORY/scripts/hardening.sh"
 
     # Имя встроенного экрана (масштаб 2.25 применяется к нему)
     local output
