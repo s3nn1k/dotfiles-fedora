@@ -53,7 +53,7 @@ class PanelDefaults(NamedTuple):
 
 PANEL_DEFAULTS = PanelDefaults(
     avatar="book",
-    theme_id="default-theme@mozilla.org",
+    theme_id="firefox-compact-dark@mozilla.org",
     theme_fg="rgb(255,255,255)",
     theme_bg="rgb(28,27,34)",
 )
