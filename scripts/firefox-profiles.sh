@@ -4,6 +4,7 @@ set -euo pipefail
 CREDENTIALS_FIREFOX="$HOME/credentials/firefox"
 DEFAULT_PROFILES_ROOT="$HOME/.mozilla/firefox"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INI_TOOL="$SCRIPT_DIR/firefox_ini.py"
 
 fail() {
     echo "firefox-profiles: $*" >&2
@@ -35,7 +36,6 @@ profiles_root() {
             return
         fi
     done
-    printf '%s\n' "$DEFAULT_PROFILES_ROOT"
 }
 
 ensure_clean_sqlite() {
@@ -81,70 +81,6 @@ profile_names() {
         PROFILE_NAMES+=("${entry##*/}")
     done
     [[ ${#PROFILE_NAMES[@]} -gt 0 ]] || fail "нет ~/credentials/firefox - нечего разворачивать"
-}
-
-ini_has_profile_block() {
-    local ini="$1" name="$2"
-    [[ -f "$ini" ]] || return 1
-    MATCH_PROFILE_NAME="$name" awk '
-        /^\[/ {
-            in_profile_block = ($0 ~ /^\[Profile[0-9]+\]$/)
-        }
-        in_profile_block && /^Name=/ && substr($0, 6) == ENVIRON["MATCH_PROFILE_NAME"] {
-            found = 1
-            exit
-        }
-        in_profile_block && /^Path=/ {
-            path = substr($0, 6)
-            sub(/.*\//, "", path)
-            if (path == ENVIRON["MATCH_PROFILE_NAME"]) {
-                found = 1
-                exit
-            }
-        }
-        END {
-            exit !found
-        }
-    ' "$ini"
-}
-
-resolve_profile_dir() {
-    local ini="$1" name="$2"
-    [[ -f "$ini" ]] || return 0
-    MATCH_PROFILE_NAME="$name" awk '
-        BEGIN {
-            match_name = ENVIRON["MATCH_PROFILE_NAME"]
-        }
-        /^\[/ {
-            if (in_profile && (block_name == match_name || block_component == match_name)) {
-                print block_path
-                found = 1
-                exit
-            }
-            in_profile = ($0 ~ /^\[Profile[0-9]+\]$/)
-            block_name = ""
-            block_path = ""
-            block_component = ""
-            next
-        }
-        in_profile && /=/ {
-            eq = index($0, "=")
-            key = substr($0, 1, eq - 1)
-            value = substr($0, eq + 1)
-            if (key == "Name") {
-                block_name = value
-            } else if (key == "Path") {
-                block_path = value
-                block_component = value
-                sub(/.*\//, "", block_component)
-            }
-        }
-        END {
-            if (!found && in_profile && (block_name == match_name || block_component == match_name)) {
-                print block_path
-            }
-        }
-    ' "$ini"
 }
 
 contained_profile_path() {
@@ -195,13 +131,22 @@ cmd_init() {
     require_firefox_closed
     command -v firefox >/dev/null || fail "firefox не найден в PATH"
     profile_names
+    if [[ -z "$PROFILES_ROOT" ]]; then
+        local first="${PROFILE_NAMES[0]}"
+        firefox -CreateProfile "$first" >/dev/null 2>&1 || fail "не создан профиль: $first"
+        echo "firefox-profiles: создан профиль: $first"
+        PROFILES_ROOT="$(profiles_root)"
+        if [[ -z "$PROFILES_ROOT" ]]; then
+            fail "firefox не создал profiles.ini после -CreateProfile: $first"
+        fi
+    fi
     local ini="$PROFILES_ROOT/profiles.ini"
     local failed=0
     local name profile_path profile_dir has_block has_dir
     for name in "${PROFILE_NAMES[@]}"; do
         has_block=0
         has_dir=0
-        profile_path="$(resolve_profile_dir "$ini" "$name")"
+        profile_path="$("$INI_TOOL" resolve "$ini" "$name")"
         if [[ -n "$profile_path" ]]; then
             if ! profile_dir="$(contained_profile_path "$PROFILES_ROOT" "$profile_path")"; then
                 profile_dir=""
@@ -210,7 +155,7 @@ cmd_init() {
                 has_dir=1
             fi
         fi
-        if ini_has_profile_block "$ini" "$name"; then
+        if "$INI_TOOL" has "$ini" "$name"; then
             has_block=1
         fi
         if (( has_block == 0 && has_dir == 0 )); then
@@ -218,7 +163,7 @@ cmd_init() {
             echo "firefox-profiles: создан профиль: $name"
             PROFILES_ROOT="$(profiles_root)"
             ini="$PROFILES_ROOT/profiles.ini"
-            profile_path="$(resolve_profile_dir "$ini" "$name")"
+            profile_path="$("$INI_TOOL" resolve "$ini" "$name")"
             if [[ -z "$profile_path" ]]; then
                 fail "не удалось разрешить каталог созданного профиля: $name"
             fi
@@ -244,12 +189,15 @@ cmd_push() {
         fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
     fi
     profile_names
+    if [[ -z "$PROFILES_ROOT" ]]; then
+        fail "profiles.ini не найден - сначала init"
+    fi
     local failed=0
     local ini="$PROFILES_ROOT/profiles.ini"
     local name profile credentials_dir strip_output profile_path
     for name in "${PROFILE_NAMES[@]}"; do
         credentials_dir="$CREDENTIALS_FIREFOX/$name"
-        profile_path="$(resolve_profile_dir "$ini" "$name")"
+        profile_path="$("$INI_TOOL" resolve "$ini" "$name")"
         if [[ -z "$profile_path" ]]; then
             echo "firefox-profiles: $name: профиль отсутствует (нет блока в profiles.ini)" >&2
             failed=1
@@ -299,13 +247,16 @@ cmd_push() {
 cmd_pull() {
     require_firefox_closed
     profile_names
+    if [[ -z "$PROFILES_ROOT" ]]; then
+        fail "profiles.ini не найден - сначала init"
+    fi
     local failed=0
     local ini="$PROFILES_ROOT/profiles.ini"
     local name profile credentials_dir profile_path local_version credentials_version
     local -a pulled=()
     for name in "${PROFILE_NAMES[@]}"; do
         credentials_dir="$CREDENTIALS_FIREFOX/$name"
-        profile_path="$(resolve_profile_dir "$ini" "$name")"
+        profile_path="$("$INI_TOOL" resolve "$ini" "$name")"
         if [[ -z "$profile_path" ]]; then
             echo "firefox-profiles: $name: профиль не создан: сначала init" >&2
             failed=1
@@ -361,6 +312,10 @@ remove_profile_dir() {
 
 cmd_reset() {
     require_firefox_closed
+    if [[ -z "$PROFILES_ROOT" ]]; then
+        echo "firefox-profiles: profiles.ini не найден - вайпить нечего" >&2
+        return 0
+    fi
     local ini="$PROFILES_ROOT/profiles.ini"
     local -a unregister_names=() profile_dirs=()
     local name path dir skipped=0
@@ -368,43 +323,7 @@ cmd_reset() {
         while IFS=$'\t' read -r name path; do
             unregister_names+=("$name")
             profile_dirs+=("$path")
-        done < <(awk '
-            /^\[/ {
-                if (in_profile) {
-                    if (name != "" && path != "") {
-                        print name "\t" path
-                    } else {
-                        incomplete++
-                    }
-                }
-                in_profile = ($0 ~ /^\[Profile[0-9]+\]$/)
-                name = ""
-                path = ""
-                next
-            }
-            in_profile && /=/ {
-                eq = index($0, "=")
-                key = substr($0, 1, eq - 1)
-                value = substr($0, eq + 1)
-                if (key == "Name") {
-                    name = value
-                } else if (key == "Path") {
-                    path = value
-                }
-            }
-            END {
-                if (in_profile) {
-                    if (name != "" && path != "") {
-                        print name "\t" path
-                    } else {
-                        incomplete++
-                    }
-                }
-                if (incomplete > 0) {
-                    print "firefox-profiles: " incomplete " [Profile]-блоков без Name/Path - их каталоги не тронуты" > "/dev/stderr"
-                }
-            }
-        ' "$ini")
+        done < <("$INI_TOOL" blocks "$ini")
         if [[ ${#unregister_names[@]} -gt 0 ]]; then
             if ! "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" unregister "${unregister_names[@]}"; then
                 fail "регистратор не справился - профили не удалены"
@@ -430,7 +349,7 @@ cmd_reset() {
         PROFILES_ROOT="$(profiles_root)"
         ini="$PROFILES_ROOT/profiles.ini"
         for name in "${PROFILE_NAMES[@]}"; do
-            skeleton_path="$(resolve_profile_dir "$ini" "$name")"
+            skeleton_path="$("$INI_TOOL" resolve "$ini" "$name")"
             if [[ -z "$skeleton_path" ]]; then
                 fail "не удалось разрешить каталог созданного профиля: $name"
             fi
