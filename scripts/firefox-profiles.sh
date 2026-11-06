@@ -56,7 +56,7 @@ import sqlite3
 import sys
 
 try:
-    connection = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True)
+    connection = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro&immutable=1", uri=True)
     print(connection.execute("PRAGMA user_version").fetchone()[0])
     connection.close()
 except sqlite3.Error as error:
