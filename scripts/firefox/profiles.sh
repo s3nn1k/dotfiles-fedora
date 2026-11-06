@@ -4,7 +4,7 @@ set -euo pipefail
 CREDENTIALS_FIREFOX="$HOME/credentials/firefox"
 DEFAULT_PROFILES_ROOT="$HOME/.mozilla/firefox"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INI_TOOL="$SCRIPT_DIR/firefox_ini.py"
+INI_TOOL="$SCRIPT_DIR/ini.py"
 
 fail() {
     echo "firefox-profiles: $*" >&2
@@ -13,11 +13,11 @@ fail() {
 
 usage() {
     cat >&2 <<'EOF'
-usage: firefox-profiles.sh init|push|pull|reset
-  init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile (каталог по profiles.ini), линковать user.js и chrome, зарегистрировать их в панели Firefox
+usage: profiles.sh init|push|pull|reset
+  init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile (каталог по profiles.ini), линковать user.js и chrome, зарегистрировать их в панели Firefox (стор панели создаётся при отсутствии - запуск Firefox до init не нужен)
   push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
   pull            развернуть places.sqlite (закладки) из ~/credentials/firefox в профили и зарегистрировать их в панели (затирает локальные изменения - сначала push; Firefox получателя не старее источника)
-  reset           полный вайп всех профилей Firefox: ini-блоки, строки панели, каталоги, installs.ini и Profile Groups; credentials остаются; воссоздаёт скелет (профили без регистрации); порядок: первый запуск firefox -P <слаг>, затем init (регистрация) и pull
+  reset           полный вайп состояния Firefox: каталог профилей (profiles.ini, Profile Groups, каталоги профилей, Crash Reports, Pending Pings) и кэш (${XDG_CACHE_HOME:-~/.cache}/mozilla); credentials не тронуты; после reset - init
 EOF
     exit 1
 }
@@ -56,7 +56,7 @@ import sqlite3
 import sys
 
 try:
-    connection = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True)
+    connection = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro&immutable=1", uri=True)
     print(connection.execute("PRAGMA user_version").fetchone()[0])
     connection.close()
 except sqlite3.Error as error:
@@ -176,10 +176,10 @@ cmd_init() {
             echo "firefox-profiles: $name: user.js и chrome не линкованы" >&2
             continue
         fi
-        link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$profile_dir/user.js" "$name"
-        link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$profile_dir/chrome" "$name"
+        link_profile_entry "$SCRIPT_DIR/../../firefox/user.js" "$profile_dir/user.js" "$name"
+        link_profile_entry "$SCRIPT_DIR/../../firefox/chrome" "$profile_dir/chrome" "$name"
     done
-    "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
+    "$SCRIPT_DIR/register.py" --panel-config-dir "$CREDENTIALS_FIREFOX" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
     [[ $failed -eq 0 ]] || exit 1
 }
 
@@ -227,7 +227,7 @@ cmd_push() {
             fail "не скопирован places.sqlite: $profile"
         fi
         strip_output=""
-        if ! strip_output=$("$SCRIPT_DIR/firefox-strip.py" "$name" "$credentials_dir/places.sqlite.tmp" 2>&1); then
+        if ! strip_output=$("$SCRIPT_DIR/strip.py" "$name" "$credentials_dir/places.sqlite.tmp" 2>&1); then
             echo "firefox-profiles: $name: история не вырезана: $strip_output" >&2
             rm -f "$credentials_dir/places.sqlite.tmp"
             failed=1
@@ -297,80 +297,37 @@ cmd_pull() {
         pulled+=("$name")
     done
     if [[ ${#pulled[@]} -gt 0 ]]; then
-        "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" register "${pulled[@]}" || failed=1
+        "$SCRIPT_DIR/register.py" --panel-config-dir "$CREDENTIALS_FIREFOX" "$PROFILES_ROOT" register "${pulled[@]}" || failed=1
     fi
     [[ $failed -eq 0 ]] || exit 1
 }
 
-remove_profile_dir() {
-    local root="$1" path="$2" dir
-    if ! dir="$(contained_profile_path "$root" "$path")"; then
-        return 1
-    fi
-    rm -rf "$dir"
-}
-
 cmd_reset() {
     require_firefox_closed
-    if [[ -z "$PROFILES_ROOT" ]]; then
-        echo "firefox-profiles: profiles.ini не найден - вайпить нечего" >&2
+    local cache_root="${XDG_CACHE_HOME:-$HOME/.cache}/mozilla"
+    if [[ -z "$PROFILES_ROOT" && ! -e "$cache_root" ]]; then
+        echo "firefox-profiles: вайпить нечего - профилей Firefox нет" >&2
         return 0
     fi
-    local ini="$PROFILES_ROOT/profiles.ini"
-    local -a unregister_names=() profile_dirs=()
-    local name path dir skipped=0
-    if [[ -f "$ini" ]]; then
-        while IFS=$'\t' read -r name path; do
-            unregister_names+=("$name")
-            profile_dirs+=("$path")
-        done < <("$INI_TOOL" blocks "$ini")
-        if [[ ${#unregister_names[@]} -gt 0 ]]; then
-            if ! "$SCRIPT_DIR/firefox-register.py" "$PROFILES_ROOT" unregister "${unregister_names[@]}"; then
-                fail "регистратор не справился - профили не удалены"
-            fi
-        fi
+    if [[ -n "$PROFILES_ROOT" && "$PROFILES_ROOT" != "$HOME"/* ]]; then
+        fail "каталог профилей не строго под $HOME: $PROFILES_ROOT - вайп прерван"
     fi
-    if [[ ${#profile_dirs[@]} -gt 0 ]]; then
-        for path in "${profile_dirs[@]}"; do
-            if ! remove_profile_dir "$PROFILES_ROOT" "$path"; then
-                skipped=$((skipped + 1))
-            fi
-        done
+    if [[ "$cache_root" != "$HOME"/* ]]; then
+        fail "кэш не строго под $HOME: $cache_root - вайп прерван"
     fi
-    rm -f "$PROFILES_ROOT/profiles.ini" "$PROFILES_ROOT/installs.ini"
-    rm -rf "$PROFILES_ROOT/Profile Groups"
-    find "$PROFILES_ROOT" -mindepth 1 -type d -empty -delete || echo "firefox-profiles: не удалось удалить пустые каталоги в $PROFILES_ROOT" >&2
-    if [[ -d "$CREDENTIALS_FIREFOX" ]]; then
-        profile_names
-        local skeleton_path skeleton_dir skeleton_skipped=0
-        for name in "${PROFILE_NAMES[@]}"; do
-            firefox -CreateProfile "$name" >/dev/null 2>&1 || fail "не создан профиль: $name"
-        done
-        PROFILES_ROOT="$(profiles_root)"
-        ini="$PROFILES_ROOT/profiles.ini"
-        for name in "${PROFILE_NAMES[@]}"; do
-            skeleton_path="$("$INI_TOOL" resolve "$ini" "$name")"
-            if [[ -z "$skeleton_path" ]]; then
-                fail "не удалось разрешить каталог созданного профиля: $name"
-            fi
-            if ! skeleton_dir="$(prepare_profile_dir "$PROFILES_ROOT" "$skeleton_path")"; then
-                skeleton_skipped=$((skeleton_skipped + 1))
-                continue
-            fi
-            link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$skeleton_dir/user.js" "$name"
-            link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$skeleton_dir/chrome" "$name"
-        done
-        echo "firefox-profiles: скелет воссоздан: профили созданы, user.js и chrome линкованы"
-        if (( skeleton_skipped > 0 )); then
-            echo "firefox-profiles: пропущено каталогов: $skeleton_skipped - создай вручную (см. предупреждения выше)"
-        fi
+    local -a wiped=()
+    if [[ -n "$PROFILES_ROOT" ]]; then
+        rm -rf "$PROFILES_ROOT"
+        wiped+=("каталог профилей $PROFILES_ROOT")
+    fi
+    rm -rf "$cache_root"
+    wiped+=("кэш $cache_root")
+    if (( ${#wiped[@]} == 1 )); then
+        echo "firefox-profiles: вайп выполнен: ${wiped[0]} удалён"
     else
-        echo "firefox-profiles: скелет не воссоздан, обычный запуск Firefox создаст дефолтный профиль" >&2
+        echo "firefox-profiles: вайп выполнен: ${wiped[0]} и ${wiped[1]} удалены"
     fi
-    echo "firefox-profiles: порядок развёртывания: первый запуск firefox -P <слаг> (или выбор в менеджере), затем init (регистрация) и pull"
-    if (( skipped > 0 )); then
-        echo "firefox-profiles: пропущено каталогов: $skipped - удали вручную (см. предупреждения выше)"
-    fi
+    echo "firefox-profiles: следующий шаг - init"
 }
 
 case "${1:-}" in
