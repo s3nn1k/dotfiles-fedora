@@ -4,7 +4,7 @@ set -euo pipefail
 CREDENTIALS_FIREFOX="$HOME/credentials/firefox"
 DEFAULT_PROFILES_ROOT="$HOME/.mozilla/firefox"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INI_TOOL="$SCRIPT_DIR/firefox_ini.py"
+INI_TOOL="$SCRIPT_DIR/ini.py"
 
 fail() {
     echo "firefox-profiles: $*" >&2
@@ -13,7 +13,7 @@ fail() {
 
 usage() {
     cat >&2 <<'EOF'
-usage: firefox-profiles.sh init|push|pull|reset
+usage: profiles.sh init|push|pull|reset
   init            создать отсутствующие профили из ~/credentials/firefox через firefox -CreateProfile (каталог по profiles.ini), линковать user.js и chrome, зарегистрировать их в панели Firefox (стор панели создаётся при отсутствии - запуск Firefox до init не нужен)
   push            скопировать places.sqlite (закладки; история вырезается) из профилей в ~/credentials/firefox
   pull            развернуть places.sqlite (закладки) из ~/credentials/firefox в профили и зарегистрировать их в панели (затирает локальные изменения - сначала push; Firefox получателя не старее источника)
@@ -176,10 +176,10 @@ cmd_init() {
             echo "firefox-profiles: $name: user.js и chrome не линкованы" >&2
             continue
         fi
-        link_profile_entry "$SCRIPT_DIR/../firefox/user.js" "$profile_dir/user.js" "$name"
-        link_profile_entry "$SCRIPT_DIR/../firefox/chrome" "$profile_dir/chrome" "$name"
+        link_profile_entry "$SCRIPT_DIR/../../firefox/user.js" "$profile_dir/user.js" "$name"
+        link_profile_entry "$SCRIPT_DIR/../../firefox/chrome" "$profile_dir/chrome" "$name"
     done
-    "$SCRIPT_DIR/firefox-register.py" --panel-config-dir "$CREDENTIALS_FIREFOX" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
+    "$SCRIPT_DIR/register.py" --panel-config-dir "$CREDENTIALS_FIREFOX" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
     [[ $failed -eq 0 ]] || exit 1
 }
 
@@ -227,7 +227,7 @@ cmd_push() {
             fail "не скопирован places.sqlite: $profile"
         fi
         strip_output=""
-        if ! strip_output=$("$SCRIPT_DIR/firefox-strip.py" "$name" "$credentials_dir/places.sqlite.tmp" 2>&1); then
+        if ! strip_output=$("$SCRIPT_DIR/strip.py" "$name" "$credentials_dir/places.sqlite.tmp" 2>&1); then
             echo "firefox-profiles: $name: история не вырезана: $strip_output" >&2
             rm -f "$credentials_dir/places.sqlite.tmp"
             failed=1
@@ -297,7 +297,7 @@ cmd_pull() {
         pulled+=("$name")
     done
     if [[ ${#pulled[@]} -gt 0 ]]; then
-        "$SCRIPT_DIR/firefox-register.py" --panel-config-dir "$CREDENTIALS_FIREFOX" "$PROFILES_ROOT" register "${pulled[@]}" || failed=1
+        "$SCRIPT_DIR/register.py" --panel-config-dir "$CREDENTIALS_FIREFOX" "$PROFILES_ROOT" register "${pulled[@]}" || failed=1
     fi
     [[ $failed -eq 0 ]] || exit 1
 }

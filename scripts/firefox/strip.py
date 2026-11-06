@@ -5,7 +5,7 @@ import sys
 
 
 def usage():
-    print("usage: firefox-strip.py <имя-профиля> <путь-к-places-копии>", file=sys.stderr)
+    print("usage: strip.py <имя-профиля> <путь-к-places-копии>", file=sys.stderr)
     sys.exit(1)
 
 

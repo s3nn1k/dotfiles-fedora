@@ -150,7 +150,7 @@ def emit_blocks(ini_path):
 
 
 def usage():
-    print("usage: firefox_ini.py resolve <ini> <name> | has <ini> <name> | blocks <ini>", file=sys.stderr)
+    print("usage: ini.py resolve <ini> <name> | has <ini> <name> | blocks <ini>", file=sys.stderr)
     sys.exit(1)
 
 

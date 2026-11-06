@@ -12,8 +12,8 @@ from typing import NamedTuple
 sys.dont_write_bytecode = True
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from firefox_cityhash import install_hash
-from firefox_ini import (
+from cityhash import install_hash
+from ini import (
     drop_ini_blocks,
     ini_block,
     ini_install_default_path,
@@ -106,7 +106,7 @@ def warn(message):
 
 
 def usage():
-    print("usage: firefox-register.py [--panel-config-dir <dir>] <profiles-root> register <имя...> | unregister <имя...>", file=sys.stderr)
+    print("usage: register.py [--panel-config-dir <dir>] <profiles-root> register <имя...> | unregister <имя...>", file=sys.stderr)
     sys.exit(1)
 
 
