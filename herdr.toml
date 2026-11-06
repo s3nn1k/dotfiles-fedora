@@ -245,6 +245,13 @@ key = "prefix+shift+9"
 type = "shell"
 command = "herdr-ws move-tab 9"
 
+# переименование агента панели: prefix+m (скрипт bin/herdr-agent-rename)
+[[keys.command]]
+key = "prefix+m"
+type = "popup"
+command = "herdr-agent-rename"
+description = "rename agent"
+
 # --- ui ----------------------------------------------------------------------
 [ui]
 hide_tab_bar_when_single_tab = false

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+name_pattern='^[a-z][a-z0-9_-]{0,31}$'
+
+exit_with_invalid_name() {
+  printf 'herdr-agent-rename: invalid agent name "%s", must match %s\n' "$1" "$name_pattern" >&2
+  exit 1
+}
+
+exit_with_no_terminal_input() {
+  printf 'herdr-agent-rename: stdin is closed, run from a terminal pane\n' >&2
+  exit 1
+}
+
+pane_id="$(herdr pane current | jq -r '.result.pane.pane_id')"
+current_name="$(herdr agent get "$pane_id" | jq -r '.result.agent.name // empty')"
+
+if [[ -n "$current_name" ]]; then
+  printf 'agent name (current: %s, empty clears): ' "$current_name" >&2
+else
+  printf 'agent name (empty clears): ' >&2
+fi
+
+read -r new_name || exit_with_no_terminal_input
+
+if [[ -z "$new_name" ]]; then
+  exec herdr agent rename "$pane_id" --clear
+fi
+
+[[ "$new_name" =~ $name_pattern ]] || exit_with_invalid_name "$new_name"
+
+exec herdr agent rename "$pane_id" "$new_name"
