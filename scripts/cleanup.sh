@@ -6,6 +6,8 @@ ALL_LANGPACKS="glibc-all-langpacks"
 BLOCK_ORDER=(leftovers firmware guest-agents installer printing telemetry misc node24 langpacks finish)
 export PATH="$HOME/.local/bin:$PATH"
 
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
 print_usage() {
     echo "cleanup: использование: cleanup.sh [--dry-run]" >&2
 }
@@ -20,12 +22,6 @@ parse_arguments() {
         --dry-run) DRY_RUN=true ;;
         *) print_usage; return 1 ;;
     esac
-}
-
-require_fedora() {
-    [[ -f /etc/os-release ]] || { echo "cleanup: нет /etc/os-release" >&2; return 1; }
-    . /etc/os-release
-    [[ "${ID:-}" == fedora ]] || { echo "cleanup: требуется Fedora" >&2; return 1; }
 }
 
 block_packages() {
@@ -103,14 +99,12 @@ remove_block() {
     local block_name="$1"
     local installed_output
     installed_output="$(block_installed_packages "$block_name")" || return 1
-    local -a installed=()
-    if [[ -n "$installed_output" ]]; then
-        mapfile -t installed <<<"$installed_output"
-    fi
-    if [[ "${#installed[@]}" == 0 ]]; then
+    if [[ -z "$installed_output" ]]; then
         echo "cleanup: блок $block_name пропущен (установленных пакетов нет)"
         return 0
     fi
+    local -a installed
+    mapfile -t installed <<<"$installed_output"
     echo "cleanup: блок $block_name"
     run_dnf remove "${installed[@]}"
 }
@@ -130,14 +124,12 @@ migrate_node24() {
     fi
     local obsolete_output
     obsolete_output="$(block_installed_packages node24)" || return 1
-    local -a obsolete=()
-    if [[ -n "$obsolete_output" ]]; then
-        mapfile -t obsolete <<<"$obsolete_output"
-    fi
-    if [[ "${#obsolete[@]}" == 0 ]]; then
+    if [[ -z "$obsolete_output" ]]; then
         echo "cleanup: блок node24 пропущен (устаревших пакетов нет)"
         return 0
     fi
+    local -a obsolete
+    mapfile -t obsolete <<<"$obsolete_output"
     if [[ "$DRY_RUN" == true ]]; then
         echo "cleanup: dry-run: remove-транзакция node24 не превьюируется (после отклонённого install показала бы каскад nodejs24-семьи, которого в реальном прогоне нет)"
         return 0
@@ -213,9 +205,7 @@ show_plan() {
             *)
                 installed_output="$(block_installed_packages "$block_name")" || return 1
                 installed=()
-                if [[ -n "$installed_output" ]]; then
-                    mapfile -t installed <<<"$installed_output"
-                fi
+                [[ -n "$installed_output" ]] && mapfile -t installed <<<"$installed_output"
                 printf '  %-13s %s\n' "$block_name" "${#installed[@]}"
                 ;;
         esac
@@ -255,7 +245,7 @@ run_blocks() {
 
 main() {
     parse_arguments "$@"
-    require_fedora
+    require_fedora cleanup
     sudo -v
     local available_before available_after freed_bytes
     available_before="$(root_available_bytes)"

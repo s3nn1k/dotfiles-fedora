@@ -73,7 +73,7 @@ pre-commit)
     fi
     ;;
 *)
-    echo "usage: git-crypt-repo {init|unlock|lock|status|key-show}" >&2
+    echo "usage: git-crypt-repo {init|unlock|lock|status|key-show|pre-commit}" >&2
     exit 1
     ;;
 esac

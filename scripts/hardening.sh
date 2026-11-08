@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
 STAGING_FILE=""
-require_fedora() {
-    [[ -f /etc/os-release ]] || { echo "hardening: нет /etc/os-release" >&2; return 1; }
-    . /etc/os-release
-    [[ "${ID:-}" == fedora ]] || { echo "hardening: требуется Fedora" >&2; return 1; }
-}
 install_root_file_if_changed() {
     local destination="$1"
     cat > "$STAGING_FILE"
@@ -231,18 +228,12 @@ configure_dnf_and_banners() {
     if ((${#appended[@]} > 0)); then
         echo "hardening: $dnf_conf дополнен: ${appended[*]}"
     fi
-    if install_root_file_if_changed "/etc/issue" <<'EOF'
-Authorized users only. All activity is logged.
-EOF
-    then
-        echo "hardening: баннер /etc/issue обновлён"
-    fi
-    if install_root_file_if_changed "/etc/issue.net" <<'EOF'
-Authorized users only. All activity is logged.
-EOF
-    then
-        echo "hardening: баннер /etc/issue.net обновлён"
-    fi
+    local banner_destination
+    for banner_destination in /etc/issue /etc/issue.net; do
+        if install_root_file_if_changed "$banner_destination" <<<'Authorized users only. All activity is logged.'; then
+            echo "hardening: баннер $banner_destination обновлён"
+        fi
+    done
 }
 configure_auditd() {
     local installed=false rules_replaced=false rules_written=false readback
@@ -370,7 +361,7 @@ EOF
     fi
 }
 main() {
-    require_fedora
+    require_fedora hardening
     sudo -v
     STAGING_FILE="$(mktemp "${TMPDIR:-/tmp}/dotfiles-fedora-hardening.XXXXXX")"
     trap 'rm -f "$STAGING_FILE"' EXIT
