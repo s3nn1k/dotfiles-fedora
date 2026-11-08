@@ -14,13 +14,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cityhash import install_hash
 from ini import (
-    drop_ini_blocks,
+    ensure_ini_section,
     ini_block,
+    ini_entry_value,
     ini_install_default_path,
     ini_profile_path,
     ini_resolve_path,
+    ini_section_hashes,
     ini_store_id_for_path,
-    read_lines,
 )
 
 FOUND_STORE = "found"
@@ -106,7 +107,7 @@ def warn(message):
 
 
 def usage():
-    print("usage: register.py [--panel-config-dir <dir>] <profiles-root> register <имя...> | unregister <имя...>", file=sys.stderr)
+    print("usage: register.py <profiles-root> register <имя...>", file=sys.stderr)
     sys.exit(1)
 
 
@@ -235,66 +236,6 @@ def install_directory():
     if not install_dir or not os.path.isfile(os.path.join(install_dir, "application.ini")):
         return ""
     return install_dir
-
-
-def ini_section_hashes(ini_path, header_re):
-    hashes = set()
-    for line in read_lines(ini_path):
-        match = header_re.match(line)
-        if match:
-            hashes.add(match.group(1))
-    return hashes
-
-
-def ini_section_body(ini_path, header):
-    try:
-        with open(ini_path, encoding="utf-8", errors="surrogateescape") as handle:
-            lines = handle.read().splitlines()
-    except FileNotFoundError:
-        return []
-    starts = [i for i, line in enumerate(lines) if line.startswith("[")]
-    for i in starts:
-        if lines[i] == header:
-            return lines[i + 1:next((j for j in starts if j > i), len(lines))]
-    return None
-
-
-def ini_entry_value(ini_path, header, key):
-    body = ini_section_body(ini_path, header)
-    if body is None:
-        return None
-    for line in body:
-        line_key, _, value = line.partition("=")
-        if line_key == key:
-            return value
-    return None
-
-
-def ensure_ini_section(ini_path, header, entries):
-    try:
-        with open(ini_path, encoding="utf-8", errors="surrogateescape") as handle:
-            lines = handle.read().splitlines()
-    except FileNotFoundError:
-        lines = []
-    entry_keys = {entry.split("=", 1)[0] for entry in entries}
-    starts = [i for i, line in enumerate(lines) if line.startswith("[")]
-    for i in starts:
-        if lines[i] != header:
-            continue
-        block_end = next((j for j in starts if j > i), len(lines))
-        block = lines[i + 1:block_end]
-        if all(entry in block for entry in entries):
-            return False
-        kept = [line for line in block if line.split("=", 1)[0] not in entry_keys]
-        lines[i + 1:block_end] = kept + entries
-        break
-    else:
-        if lines:
-            lines.append("")
-        lines.extend([header] + entries)
-    with open(ini_path, encoding="utf-8", errors="surrogateescape", mode="w") as handle:
-        handle.write("\n".join(lines) + "\n")
-    return True
 
 
 def ensure_install_binding(names, profiles_root, store):
@@ -471,82 +412,13 @@ def register(names, profiles_root, panel_config_dir):
         )
 
 
-def unregister(names, profiles_root):
-    try:
-        state, store = find_store(profiles_root)
-    except RegistrationProblem as error:
-        warn(str(error))
-        sys.exit(1)
-    store_path = store.path if store else ""
-    store_backup_path = ""
-    rows_deletable = False
-    if state == MULTIPLE_STORES:
-        warn("в Profile Groups несколько сторов - строки панели не удалены, разберись вручную")
-        sys.exit(1)
-    elif state == FOUND_STORE:
-        store_backup_path = store_path
-        try:
-            schema_ok = store_schema_ok(store_path)
-        except RegistrationProblem as error:
-            warn(str(error))
-            sys.exit(1)
-        if schema_ok:
-            rows_deletable = True
-            if not os.path.exists(store_path + ".pre-register"):
-                backup_store(store_path, store_path + ".pre-register")
-        else:
-            warn("стор несовместим (нужна таблица Profiles с колонками path,name,avatar,themeId,themeFg,themeBg) - строки панели не удалены")
-            sys.exit(1)
-    ini_path = panel_ini_path(profiles_root)
-    store_row_paths = []
-    if rows_deletable:
-        if not os.path.isfile(ini_path):
-            warn("profiles.ini отсутствует - стор-строки не резолвятся и не удалены")
-        else:
-            with open(ini_path, encoding="utf-8", errors="surrogateescape") as handle:
-                ini_lines = handle.read().splitlines()
-            for name in names:
-                profile_path = ini_profile_path(ini_lines, name)
-                if profile_path is None:
-                    warn(f"{name}: в profiles.ini нет блока или Path - стор-строка не удалена")
-                    sys.exit(1)
-                store_row_paths.append(profile_path)
-    if os.path.isfile(ini_path):
-        drop_ini_blocks(ini_path, names)
-    if rows_deletable and store_row_paths:
-        connection = sqlite3.connect(store_path)
-        try:
-            placeholders = ",".join("?" * len(store_row_paths))
-            connection.execute(f"DELETE FROM Profiles WHERE path IN ({placeholders})", store_row_paths)
-            connection.commit()
-        finally:
-            connection.close()
-    backups = [ini_path + ".pre-register"]
-    if store_backup_path:
-        backups.append(store_backup_path + ".pre-register")
-    for backup in backups:
-        if os.path.exists(backup):
-            try:
-                os.remove(backup)
-            except OSError:
-                warn(f"не удалён {backup} - разберись вручную")
-
-
 def main():
     args = sys.argv[1:]
-    panel_config_dir = os.path.expanduser(DEFAULT_PANEL_CONFIG_DIR)
-    if args[:1] == ["--panel-config-dir"]:
-        if len(args) < 2:
-            usage()
-        panel_config_dir = args[1]
-        args = args[2:]
     if len(args) < 3:
         usage()
     profiles_root, command, names = args[0], args[1], args[2:]
     if command == "register":
-        register(names, profiles_root, panel_config_dir)
-    elif command == "unregister":
-        unregister(names, profiles_root)
+        register(names, profiles_root, os.path.expanduser(DEFAULT_PANEL_CONFIG_DIR))
     else:
         usage()
 

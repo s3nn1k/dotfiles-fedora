@@ -10,6 +10,11 @@ def read_lines(ini_path):
         return []
 
 
+def write_lines(ini_path, lines):
+    with open(ini_path, "w", encoding="utf-8", errors="surrogateescape") as handle:
+        handle.write("\n".join(lines) + "\n")
+
+
 def is_profile_header(header):
     return header.startswith("[Profile") and header.endswith("]") and header[8:-1].isdigit()
 
@@ -107,50 +112,57 @@ def ini_resolve_path(ini_path, wanted_name):
     return ini_profile_path(read_lines(ini_path), wanted_name)
 
 
-def drop_ini_blocks(ini_path, names):
+def ini_section_hashes(ini_path, header_re):
+    hashes = set()
+    for line in read_lines(ini_path):
+        match = header_re.match(line)
+        if match:
+            hashes.add(match.group(1))
+    return hashes
+
+
+def ini_section_body(ini_path, header):
+    for section_header, body in ini_sections(ini_path):
+        if section_header == header:
+            return body
+    return None
+
+
+def ini_entry_value(ini_path, header, key):
+    body = ini_section_body(ini_path, header)
+    if body is None:
+        return None
+    for line in body:
+        line_key, _, value = line.partition("=")
+        if line_key == key:
+            return value
+    return None
+
+
+def ensure_ini_section(ini_path, header, entries):
     lines = read_lines(ini_path)
-    wanted = set(names)
-    drop = set()
-    for block_start, block_end in ini_block_ranges(lines):
-        block_name = ""
-        block_path_component = ""
-        for line in lines[block_start + 1:block_end]:
-            key, _, value = line.partition("=")
-            if key == "Name":
-                block_name = value
-            elif key == "Path":
-                block_path_component = path_last_component(value)
-        if block_name in wanted or block_path_component in wanted:
-            drop.update(range(block_start, block_end))
-    result = [line for i, line in enumerate(lines) if i not in drop]
-    if result != lines:
-        with open(ini_path, "w", encoding="utf-8", errors="surrogateescape") as handle:
-            handle.write("\n".join(result) + "\n")
-
-
-def emit_blocks(ini_path):
-    incomplete = 0
-    for header, body in ini_sections(ini_path):
-        if not is_profile_header(header):
+    entry_keys = {entry.split("=", 1)[0] for entry in entries}
+    starts = [i for i, line in enumerate(lines) if line.startswith("[")]
+    for i in starts:
+        if lines[i] != header:
             continue
-        block_name = ""
-        block_path = ""
-        for line in body:
-            key, _, value = line.partition("=")
-            if key == "Name":
-                block_name = value
-            elif key == "Path":
-                block_path = value
-        if block_name and block_path:
-            print(f"{block_name}\t{block_path}")
-        else:
-            incomplete += 1
-    if incomplete:
-        print(f"firefox-ini: {incomplete} [Profile]-блоков без Name/Path - их каталоги не тронуты", file=sys.stderr)
+        block_end = next((j for j in starts if j > i), len(lines))
+        block = lines[i + 1:block_end]
+        if all(entry in block for entry in entries):
+            return False
+        kept = [line for line in block if line.split("=", 1)[0] not in entry_keys]
+        lines[i + 1:block_end] = kept + entries
+        break
+    else:
+        if lines:
+            lines.append("")
+        lines.extend([header] + entries)
+    write_lines(ini_path, lines)
+    return True
 
 
 def usage():
-    print("usage: ini.py resolve <ini> <name> | has <ini> <name> | blocks <ini>", file=sys.stderr)
+    print("usage: ini.py resolve <ini> <name> | has <ini> <name>", file=sys.stderr)
     sys.exit(1)
 
 
@@ -162,8 +174,6 @@ def main():
         print(ini_resolve_path(ini_path, sys.argv[3]) or "")
     elif command == "has" and len(sys.argv) == 4:
         sys.exit(0 if ini_has_profile_block(ini_path, sys.argv[3]) else 1)
-    elif command == "blocks" and len(sys.argv) == 3:
-        emit_blocks(ini_path)
     else:
         usage()
 
