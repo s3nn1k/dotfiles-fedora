@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# ~/credentials wiring: link (symlink secrets into $HOME) and secure (tighten
-# permissions of the decrypted tree). The repository itself is cloned by
-# scripts/bootstrap.sh; this helper only operates on the standard path.
 set -euo pipefail
 
 REPOSITORY_ROOT="$HOME/credentials"
@@ -54,10 +51,6 @@ link_file() {
 }
 
 validate_secure_sources() {
-    [ ! -L "$REPOSITORY_ROOT" ] || {
-        echo "credentials-setup: repository root is a symlink, refusing: $REPOSITORY_ROOT" >&2
-        return 1
-    }
     for directory_path in "${SECURE_DIRECTORIES[@]}"; do
         [ ! -L "$directory_path" ] || {
             echo "credentials-setup: source directory is a symlink, refusing: $directory_path" >&2
@@ -116,36 +109,76 @@ validate_destination_parent() {
     done
 }
 
-preflight_destination_parents() {
-    local source_path file_name
+process_credential_mappings() {
+    local phase="$1" source_path destination_path file_name
     if [ -d "$REPOSITORY_ROOT/ssh" ]; then
-        validate_destination_parent "$HOME/.ssh/.credentials-setup-preflight"
+        case "$phase" in
+        preflight) validate_destination_parent "$HOME/.ssh/.credentials-setup-preflight" ;;
+        link) mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh" ;;
+        esac
         for source_path in "$REPOSITORY_ROOT"/ssh/*; do
             [ -e "$source_path" ] || continue
             case "$source_path" in *.zsh) continue ;; esac
-            validate_destination_parent "$HOME/.ssh/$(basename "$source_path")"
+            destination_path="$HOME/.ssh/$(basename "$source_path")"
+            case "$phase" in
+            preflight) validate_destination_parent "$destination_path" ;;
+            link) link_file "$source_path" "$destination_path" ;;
+            esac
         done
     fi
+
     if [ -d "$REPOSITORY_ROOT/kube" ]; then
-        validate_destination_parent "$HOME/.kube/.credentials-setup-preflight"
+        case "$phase" in
+        preflight) validate_destination_parent "$HOME/.kube/.credentials-setup-preflight" ;;
+        link) mkdir -p "$HOME/.kube" && chmod 700 "$HOME/.kube" ;;
+        esac
         for source_path in "$REPOSITORY_ROOT"/kube/*; do
             [ -e "$source_path" ] || continue
-            validate_destination_parent "$HOME/.kube/$(basename "$source_path")"
+            destination_path="$HOME/.kube/$(basename "$source_path")"
+            case "$phase" in
+            preflight) validate_destination_parent "$destination_path" ;;
+            link) link_file "$source_path" "$destination_path" ;;
+            esac
         done
     fi
-    [ -e "$REPOSITORY_ROOT/git/git-credentials" ] &&
-        validate_destination_parent "$HOME/.git-credentials"
-    [ -e "$REPOSITORY_ROOT/postgres/pgpass" ] &&
-        validate_destination_parent "$HOME/.pgpass"
-    [ -e "$REPOSITORY_ROOT/postgres/pg_service.conf" ] &&
-        validate_destination_parent "$HOME/.pg_service.conf"
+
+    local mapped_sources=(
+        "$REPOSITORY_ROOT/git/git-credentials"
+        "$REPOSITORY_ROOT/postgres/pgpass"
+        "$REPOSITORY_ROOT/postgres/pg_service.conf"
+    )
+    local mapped_destinations=(
+        "$HOME/.git-credentials"
+        "$HOME/.pgpass"
+        "$HOME/.pg_service.conf"
+    )
+    local mapping_index
+    for mapping_index in "${!mapped_sources[@]}"; do
+        source_path="${mapped_sources[$mapping_index]}"
+        destination_path="${mapped_destinations[$mapping_index]}"
+        [ -f "$source_path" ] || continue
+        case "$phase" in
+        preflight) validate_destination_parent "$destination_path" ;;
+        link) link_file "$source_path" "$destination_path" ;;
+        esac
+    done
+
     if [ -d "$REPOSITORY_ROOT/pi" ] && {
         [ -e "$REPOSITORY_ROOT/pi/auth.json" ] ||
         [ -e "$REPOSITORY_ROOT/pi/mcp.json" ]
     }; then
+        if [ "$phase" = link ]; then
+            mkdir -p "$HOME/.pi/agent"
+        fi
         for file_name in auth.json mcp.json; do
-            [ -e "$REPOSITORY_ROOT/pi/$file_name" ] || continue
-            validate_destination_parent "$HOME/.pi/agent/$file_name"
+            destination_path="$HOME/.pi/agent/$file_name"
+            case "$phase" in
+            preflight)
+                [ -e "$REPOSITORY_ROOT/pi/$file_name" ] || continue
+                validate_destination_parent "$destination_path"
+                ;;
+            link) link_file "$REPOSITORY_ROOT/pi/$file_name" "$destination_path" ;;
+            esac
         done
     fi
 }
@@ -156,50 +189,10 @@ secure)
     secure
     ;;
 link)
-    # secrets go live through symlinks; tighten permissions before exposing them
     validate_secure_sources
-    preflight_destination_parents
+    process_credential_mappings preflight
     apply_secure_permissions
-
-    if [ -d "$REPOSITORY_ROOT/ssh" ]; then
-        mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
-        for source_path in "$REPOSITORY_ROOT"/ssh/*; do
-            [ -e "$source_path" ] || continue
-            # *.zsh (ssh wrapper function) is sourced by zshrc, not linked here
-            case "$source_path" in *.zsh) continue ;; esac
-            link_file "$source_path" "$HOME/.ssh/$(basename "$source_path")"
-        done
-    fi
-
-    if [ -d "$REPOSITORY_ROOT/kube" ]; then
-        mkdir -p "$HOME/.kube" && chmod 700 "$HOME/.kube"
-        for source_path in "$REPOSITORY_ROOT"/kube/*; do
-            [ -e "$source_path" ] || continue
-            link_file "$source_path" "$HOME/.kube/$(basename "$source_path")"
-        done
-    fi
-
-    if [ -f "$REPOSITORY_ROOT/git/git-credentials" ]; then
-        link_file "$REPOSITORY_ROOT/git/git-credentials" "$HOME/.git-credentials"
-    fi
-
-    if [ -f "$REPOSITORY_ROOT/postgres/pgpass" ]; then
-        link_file "$REPOSITORY_ROOT/postgres/pgpass" "$HOME/.pgpass"
-    fi
-
-    if [ -f "$REPOSITORY_ROOT/postgres/pg_service.conf" ]; then
-        link_file "$REPOSITORY_ROOT/postgres/pg_service.conf" "$HOME/.pg_service.conf"
-    fi
-
-    if [ -d "$REPOSITORY_ROOT/pi" ] && {
-        [ -e "$REPOSITORY_ROOT/pi/auth.json" ] ||
-        [ -e "$REPOSITORY_ROOT/pi/mcp.json" ]
-    }; then
-        mkdir -p "$HOME/.pi/agent"
-        for file_name in auth.json mcp.json; do
-            link_file "$REPOSITORY_ROOT/pi/$file_name" "$HOME/.pi/agent/$file_name"
-        done
-    fi
+    process_credential_mappings link
     ;;
 *)
     echo "usage: credentials-setup {link|secure}" >&2
