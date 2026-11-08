@@ -1,4 +1,4 @@
-# herdr — config.toml (симлинк из ~/dotfiles-fedora/herdr.toml)
+# herdr — config.toml (симлинк из ~/dotfiles-fedora/herdr/config.toml)
 onboarding = false
 
 # --- тема: zenwritten_dark ----------------------------------------------------
@@ -72,19 +72,9 @@ switch_tab = "prefix+1..9"
 # отключено
 rename_tab = ""
 close_tab = ""
-move_tab_previous = ""
-move_tab_next = ""
-switch_workspace = ""
 zoom = ""
-copy_mode = ""
-last_pane = ""
 cycle_pane_next = ""
 cycle_pane_previous = ""
-open_worktree = ""
-remove_worktree = ""
-previous_agent = ""
-next_agent = ""
-focus_agent = ""
 remote_image_paste = ""
 reload_config = ""
 resize_mode = ""

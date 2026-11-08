@@ -329,7 +329,7 @@ install_herdr() {
     herdr --version
 
     mkdir -p "$CONFIGURATION_HOME/herdr"
-    link_config "$REPOSITORY/herdr.toml" "$CONFIGURATION_HOME/herdr/config.toml"
+    link_config "$REPOSITORY/herdr/config.toml" "$CONFIGURATION_HOME/herdr/config.toml"
 
     herdr integration install pi >/dev/null 2>&1 || true
 }
@@ -477,7 +477,7 @@ main() {
     mkdir -p "$CACHE" "$LOCAL_BIN"
     install_command "$REPOSITORY/bin/swayidle_laptop.py" swayidle-laptop
     install_system_file "$REPOSITORY/systemd/logind/lid.conf" /etc/systemd/logind.conf.d/lid.conf
-    install_system_file "$REPOSITORY/systemd/60-deep.conf" /etc/systemd/sleep.conf.d/60-deep.conf
+    install_system_file "$REPOSITORY/systemd/sleep/60-deep.conf" /etc/systemd/sleep.conf.d/60-deep.conf
     "$REPOSITORY/scripts/hardening.sh"
 
     local output
@@ -512,7 +512,7 @@ main() {
     install_command "$REPOSITORY/bin/git-cred-read.sh" git-cred-read
     install_command "$REPOSITORY/bin/herdr-ws.sh" herdr-ws
     link_config "$LOCAL_BIN/git-crypt-repo" "$HOME/.local/share/git-crypt/hooks/pre-commit"
-    link_config "$REPOSITORY/systemd/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
+    link_config "$REPOSITORY/systemd/user/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service
 

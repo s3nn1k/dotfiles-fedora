@@ -3,9 +3,6 @@
 Персональные настройки поверх Fedora Sway Spin 44. Sway, foot и GTK; штатное окружение
 Fedora сохраняется.
 
-Telegram: первая установка - официальный latest tar.xz; обновления выполняет приложение.
-Запуск: `telegram`.
-
 ## Установка
 
 До запуска скрипта: установленная Fedora Sway, вход в сессию Sway, работающая сеть. Из
@@ -15,27 +12,8 @@ Telegram: первая установка - официальный latest tar.xz
 sudo dnf install -y git
 git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ~/dotfiles-fedora/scripts/bootstrap.sh
+~/dotfiles-fedora/scripts/cleanup.sh
 ```
-
-Скрипт идемпотентен и спросит sudo-пароль. Он обновляет систему через dnf upgrade и ставит пакеты dnf, раскладывает
-конфиги-симлинки, применяет security-hardening (sysctl, LLMNR off, avahi mask, срез
-ssh/mdns из firewall, автообновления безопасности), поднимает VPN mihomo
-(https-подписка обязательна), ставит официальный Telegram, настраивает gh, клонирует
-личные репозитории с повторными попытками.
-
-Существующие репозитории обновляются через `git pull --ff-only`: локальные правки, задетые
-upstream, пропускают обновление с предупреждением, расхождение с origin останавливает
-скрипт.
-
-Питание: после 300 секунд бездействия экран блокируется, через 600 секунд выключается, а
-сон наступает через 300 секунд на батарее или 1800 секунд от сети. Bootstrap ставит
-переопределения Sway и systemd; новый контур idle стартует при входе в сессию Sway (reload
-его не перезапускает), настройки крышки logind применит после следующей перезагрузки.
-Блокировка и выключение экранов позволяют pi работать, сон приостанавливает его.
-
-После bootstrap запусти `~/dotfiles-fedora/scripts/cleanup.sh`: срезает балласт Fedora
-Sway Spin (чужие firmware, гостевые агенты гипервизоров, остатки установщика, печать,
-телеметрия) и мигрирует на Node.js 24; `--dry-run` показывает план без изменений.
 
 После ручной работы с ключом в nkp:
 
@@ -45,22 +23,27 @@ Sway Spin (чужие firmware, гостевые агенты гипервизо
 
 ## Структура
 
-- `bin/` - команды, которые bootstrap ставит в `~/.local/bin`: credentials-setup (линки и
-  права `~/credentials`), git-crypt-repo (unlock/lock git-crypt-репозиториев),
-  git-cred-read (git credential helper), herdr-ws (фокус и переносы панелей herdr по
-  позиции сайдбара 1..10), swayidle-laptop (idle-контур: блокировка, выключение экрана,
-  сон), wt (транскрибация: ffmpeg + whisper.cpp).
-- `herdr.toml` - конфиг herdr (терминальный менеджер панелей и воркспейсов); bootstrap
-  линкует его в `~/.config/herdr/config.toml`.
-- `psqlrc` - UX-конфиг psql (pager off, `\x auto`, timing, промпт `user@host:port` и
-  текущая база); bootstrap линкует его в `~/.psqlrc`, `credentials-setup` линкует
-  postgres-креды из `~/credentials` в `~/.pgpass` и `~/.pg_service.conf`.
-- `scripts/` - установка машины: bootstrap.sh, setup-secrets.sh (unlock/link секретов),
-  mihomo-apply.sh (конфиг и служба mihomo), hardening.sh (sysctl, LLMNR off, avahi mask,
-  срез ssh/mdns из firewall, автообновления безопасности, PAM, sudo-логи, gpgcheck,
-  banners, auditd, mount-флаги).
-- `scripts/firefox/profiles.sh` - перенос закладок Firefox без истории между машинами:
-  reset (полный вайп) -> init (регистрация) -> pull через `~/credentials/firefox`; профили
-  появляются в панели Firefox.
+- `bin/` - команды в `~/.local/bin` от bootstrap: credentials-setup (линки и права
+  `~/credentials`), git-crypt-repo (unlock/lock git-crypt-репозиториев), git-cred-read
+  (git credential helper), herdr-ws и herdr-agent-rename (панели и агенты herdr),
+  swayidle-laptop (idle-контур Sway), wt (транскрибация ffmpeg + whisper.cpp).
+- `herdr/config.toml` - конфиг herdr; bootstrap линкует в `~/.config/herdr/config.toml`.
+- `psqlrc` - UX-конфиг psql; линкуется в `~/.psqlrc`.
+- `sway/`, `foot/`, `swaylock/`, `gtk-3.0/`, `gtk-4.0/`, `zshrc`, `zprofile`, `gitconfig`,
+  `wallpapers/` - конфиги, которые bootstrap раскладывает симлинками.
+- `systemd/` - user-юнит ssh-agent и drop-in'ы logind и sleep (последние ставятся копиями
+  в /etc).
+- `mihomo/` - шаблон конфига VPN; `firefox/` - prefs, userChrome и политики Firefox.
+- `scripts/bootstrap.sh` - установка машины с нуля: пакеты, конфиги, hardening, VPN
+  mihomo, Telegram, gh, личные репозитории.
+- `scripts/cleanup.sh` - срез балласта Fedora Sway Spin и миграция на Node.js 24
+  (`--dry-run`).
+- `scripts/hardening.sh` - sysctl, LLMNR off, avahi mask, firewall, PAM, auditd,
+  автообновления безопасности.
+- `scripts/mihomo-apply.sh` - рендер конфига mihomo из подписки и systemd-служба.
+- `scripts/setup-secrets.sh` - unlock и линк git-crypt-секретов (postgres, firefox).
+- `scripts/telegram-extract.py` - распаковка бинарника Telegram из официального tar.xz;
+  запуск установленного приложения: `telegram`.
+- `scripts/firefox/profiles.sh` - перенос закладок Firefox между машинами.
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
   здесь не настраивается.
