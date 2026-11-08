@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Настройка ноутбука Fedora Sway: пакеты, инструменты, конфиги-симлинки, GRUB.
 set -euo pipefail
 
-# Расположение этого репозитория и общие пути
 REPOSITORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.local/bin:$PATH"
 export GOBIN="$HOME/.local/bin"
@@ -10,7 +8,6 @@ CACHE="$HOME/.cache/dotfiles-fedora"
 CONFIGURATION_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 LOCAL_BIN="$HOME/.local/bin"
 
-# Проверки: Fedora Sway x86_64, обычный пользователь, GRUB
 require_fedora() {
     [[ "$(uname -s)" == Linux && "$(uname -m)" == x86_64 ]] || {
         echo "bootstrap: требуется Fedora Sway x86_64, не macOS" >&2
@@ -25,42 +22,56 @@ require_fedora() {
     }
 }
 
-# Скачивание файла с проверкой sha256; повторный запуск использует кэш
-download() {
-    local url="$1" checksum="$2" destination="$3"
-    if [[ -f "$destination" ]] && printf '%s  %s\n' "$checksum" "$destination" | sha256sum --check --status; then
-        return
-    fi
-    curl --fail --location --show-error --retry 2 --connect-timeout 15 --max-time 300 \
-        --proto '=https' --tlsv1.2 --output "$destination.part" "$url"
-    printf '%s  %s\n' "$checksum" "$destination.part" | sha256sum --check
-    mv "$destination.part" "$destination"
+checksum_matches() {
+    printf '%s  %s\n' "$1" "$2" | sha256sum --check --status
 }
 
-download_model() {
-    local url="$1" checksum="$2" destination="$3" attempt
-    if [[ -f "$destination" ]] && printf '%s  %s\n' "$checksum" "$destination" | sha256sum --check --status; then
-        return
-    fi
-    if [[ -f "$destination.part" ]] && printf '%s  %s\n' "$checksum" "$destination.part" | sha256sum --check --status; then
-        mv "$destination.part" "$destination"
-        return
-    fi
+verify_checksum() {
+    printf '%s  %s\n' "$1" "$2" | sha256sum --check
+}
+
+RETRY_STOP=255
+
+retry() {
+    local description="$1" target="$2" action="$3" attempt action_status
+    shift 3
     for attempt in 1 2 3; do
-        if curl --fail --http1.1 --location --show-error --continue-at - \
-            --connect-timeout 15 --max-time 1800 \
-            --proto '=https' --tlsv1.2 --output "$destination.part" "$url"; then
-            printf '%s  %s\n' "$checksum" "$destination.part" | sha256sum --check
-            mv "$destination.part" "$destination"
-            return
-        fi
-        echo "bootstrap: загрузка модели не удалась (попытка $attempt): $url" >&2
+        action_status=0
+        "$action" "$@" || action_status=$?
+        [[ "$action_status" == 0 || "$action_status" == "$RETRY_STOP" ]] && return "$action_status"
+        echo "bootstrap: $description (попытка $attempt): $target" >&2
         [[ "$attempt" == 3 ]] && return 1
         sleep 3
     done
 }
 
-# Симлинк из репозитория в $HOME; чужой существующий путь не трогаем
+download() {
+    local url="$1" checksum="$2" destination="$3"
+    if [[ -f "$destination" ]] && checksum_matches "$checksum" "$destination"; then
+        return
+    fi
+    curl --fail --location --show-error --retry 2 --connect-timeout 15 --max-time 300 \
+        --proto '=https' --tlsv1.2 --output "$destination.part" "$url"
+    verify_checksum "$checksum" "$destination.part"
+    mv "$destination.part" "$destination"
+}
+
+download_model() {
+    local url="$1" checksum="$2" destination="$3"
+    if [[ -f "$destination" ]] && checksum_matches "$checksum" "$destination"; then
+        return
+    fi
+    if [[ -f "$destination.part" ]] && checksum_matches "$checksum" "$destination.part"; then
+        mv "$destination.part" "$destination"
+        return
+    fi
+    retry "загрузка модели не удалась" "$url" curl --fail --http1.1 --location --show-error \
+        --continue-at - --connect-timeout 15 --max-time 1800 \
+        --proto '=https' --tlsv1.2 --output "$destination.part" "$url"
+    verify_checksum "$checksum" "$destination.part"
+    mv "$destination.part" "$destination"
+}
+
 link_config() {
     local source="$1" destination="$2" resolved_source resolved_destination
     [[ -f "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
@@ -110,13 +121,11 @@ install_system_file() {
     sudo install -D -m 644 "$source" "$destination"
 }
 
-# Записать фактическое имя встроенного экрана в sway/output.conf
 set_output_name() {
     sed -i.bak -E "s/^output [^ ]+ scale /output $2 scale /" "$1/sway/output.conf"
     rm -f "$1/sway/output.conf.bak"
 }
 
-# GRUB: скрыть меню, ждать 1 секунду (Esc показывает меню)
 configure_grub() {
     local path="${1:-/etc/default/grub}"
     sudo sed -i.bak -E 's/^[[:space:]]*GRUB_TIMEOUT_STYLE=.*/GRUB_TIMEOUT_STYLE=hidden/' "$path"
@@ -168,10 +177,6 @@ install_mihomo() {
         printf '%s\n' "$subscription_url" > "$subscription_file"
     fi
 
-    [[ -s "$subscription_file" ]] || {
-        echo "bootstrap: подписка обязательна для продолжения" >&2
-        return 1
-    }
     chmod 600 "$subscription_file"
     "$REPOSITORY/scripts/mihomo-apply.sh"
     sudo systemctl is-active --quiet mihomo || {
@@ -259,59 +264,7 @@ Categories=Network;InstantMessaging;
             return 1
         }
 
-        python3 - "$archive_path" "$staging_directory" <<'PY'
-import posixpath
-import sys
-import tarfile
-
-archive_path, extraction_directory = sys.argv[1:]
-
-
-def fail(message):
-    raise SystemExit(f"bootstrap: {message}")
-
-
-with tarfile.open(archive_path, "r:*") as archive:
-    members = archive.getmembers()
-    seen_paths = set()
-    root_member = None
-    binary_member = None
-
-    for member in members:
-        name = member.name
-        if not name or "\x00" in name or "\\" in name or name.startswith("/"):
-            fail("архив содержит небезопасный путь")
-        normalized_name = posixpath.normpath(name)
-        if normalized_name != name.rstrip("/") or normalized_name == "..":
-            fail("архив содержит путь с обходом каталогов")
-        if normalized_name != "Telegram" and not normalized_name.startswith("Telegram/"):
-            fail("архив содержит путь вне Telegram/")
-        if normalized_name in seen_paths:
-            fail("архив содержит повторяющийся путь")
-        seen_paths.add(normalized_name)
-
-        if member.issym() or member.islnk() or member.isdev():
-            fail("архив содержит ссылку или специальный файл")
-        if not (member.isdir() or member.isreg()):
-            fail("архив содержит неподдерживаемый тип файла")
-
-        if normalized_name == "Telegram":
-            if root_member is not None or not member.isdir():
-                fail("архив не содержит ожидаемый корень Telegram/")
-            root_member = member
-        if normalized_name == "Telegram/Telegram":
-            if binary_member is not None or not member.isreg() or not member.mode & 0o111:
-                fail("архив не содержит исполняемый файл Telegram")
-            binary_member = member
-
-    if root_member is None or binary_member is None:
-        fail("архив не содержит ожидаемую установку Telegram")
-
-    try:
-        archive.extractall(extraction_directory, filter="data")
-    except TypeError:
-        archive.extractall(extraction_directory)
-PY
+        python3 "$REPOSITORY/scripts/telegram-extract.py" "$archive_path" "$staging_directory"
 
         [[ -d "$staging_directory/Telegram" && ! -L "$staging_directory/Telegram" &&
             -f "$staging_directory/Telegram/Telegram" &&
@@ -381,6 +334,10 @@ install_herdr() {
     herdr integration install pi >/dev/null 2>&1 || true
 }
 
+firefox_installed() {
+    command -v firefox >/dev/null 2>&1
+}
+
 find_firefox_profiles() {
     local profile_root profile_directory
     for profile_root in "$CONFIGURATION_HOME/mozilla/firefox" "$HOME/.mozilla/firefox"; do
@@ -395,10 +352,10 @@ find_firefox_profiles() {
 install_firefox_prefs() {
     local source="$REPOSITORY/firefox/user.js" profiles profile
 
-    command -v firefox >/dev/null 2>&1 || {
+    if ! firefox_installed; then
         echo "bootstrap: firefox не установлен, пропускаю настройку профилей" >&2
         return 0
-    }
+    fi
 
     profiles="$(find_firefox_profiles)"
     if [[ -z "$profiles" ]]; then
@@ -415,10 +372,10 @@ install_firefox_prefs() {
 install_firefox_userchrome() {
     local source="$REPOSITORY/firefox/chrome/userChrome.css" profiles profile
 
-    command -v firefox >/dev/null 2>&1 || {
+    if ! firefox_installed; then
         echo "bootstrap: firefox не установлен, пропускаю настройку профилей" >&2
         return 0
-    }
+    fi
 
     profiles="$(find_firefox_profiles)"
     [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль Firefox" >&2; return 1; }
@@ -431,15 +388,14 @@ install_firefox_userchrome() {
 install_firefox_policies() {
     local source="$REPOSITORY/firefox/policies.json"
 
-    command -v firefox >/dev/null 2>&1 || {
+    if ! firefox_installed; then
         echo "bootstrap: firefox не установлен, пропускаю политики" >&2
         return 0
-    }
+    fi
 
     sudo install -D -m 644 "$source" /etc/firefox/policies/policies.json
 }
 
-# Эквивалентность https-URL клона независимо от суффикса .git и хвостового /
 normalize_git_url() {
     local url="$1"
     url="${url%/}"
@@ -448,28 +404,40 @@ normalize_git_url() {
 ' "$url"
 }
 
-# Существующий клон: git pull --ff-only; расхождение с origin - громкий стоп
+pull_once() {
+    local destination="$1" pull_output
+    if pull_output="$(LC_ALL=C git -C "$destination" pull --ff-only 2>&1)"; then
+        echo "updated:  $destination"
+        return 0
+    fi
+    if printf '%s\n' "$pull_output" | grep -q 'would be overwritten by merge\|cannot pull with rebase\|Please commit your changes'; then
+        echo "bootstrap: pull пропущен, локальные изменения не тронуты: $destination" >&2
+        return 0
+    fi
+    if printf '%s\n' "$pull_output" | grep -qi 'not possible to fast-forward\|divergent branches'; then
+        echo "bootstrap: $destination разошёлся с origin; разрули вручную и перезапусти" >&2
+        return "$RETRY_STOP"
+    fi
+    return 1
+}
+
 update_repository() {
-    local destination="$1" pull_output attempt
-    for attempt in 1 2 3; do
-        if pull_output="$(LC_ALL=C git -C "$destination" pull --ff-only 2>&1)"; then
-            echo "updated:  $destination"
-            return 0
-        fi
-        if printf '%s\n' "$pull_output" | grep -q 'would be overwritten by merge\|cannot pull with rebase\|Please commit your changes'; then
-            echo "bootstrap: pull пропущен, локальные изменения не тронуты: $destination" >&2
-            return 0
-        fi
-        if printf '%s\n' "$pull_output" | grep -qi 'not possible to fast-forward\|divergent branches'; then
-            echo "bootstrap: $destination разошёлся с origin; разрули вручную и перезапусти" >&2
-            return 1
-        fi
-        echo "bootstrap: pull не прошёл (попытка $attempt): $destination" >&2
-        [[ "$attempt" == 3 ]] && break
-        sleep 3
-    done
+    local destination="$1" retry_status=0
+    retry "pull не прошёл" "$destination" pull_once "$destination" || retry_status=$?
+    [[ "$retry_status" == "$RETRY_STOP" ]] && return 1
+    [[ "$retry_status" == 0 ]] && return 0
     echo "bootstrap: pull не прошёл после повторов; продолжаю с текущим состоянием: $destination" >&2
     return 0
+}
+
+clone_once() {
+    local url="$1" destination="$2"
+    if git clone "$url" "$destination"; then
+        echo "cloned:  $destination"
+        return 0
+    fi
+    rm -rf -- "$destination"
+    return 1
 }
 
 clone_repository() {
@@ -490,26 +458,14 @@ clone_repository() {
         update_repository "$destination"
     else
         mkdir -p "$(dirname "$destination")"
-        local attempt
-        for attempt in 1 2 3; do
-            if git clone "$url" "$destination"; then
-                echo "cloned:  $destination"
-                return 0
-            fi
-            rm -rf -- "$destination"
-            echo "bootstrap: клон не прошёл (попытка $attempt): $url" >&2
-            [[ "$attempt" == 3 ]] && return 1
-            sleep 3
-        done
+        retry "клон не прошёл" "$url" clone_once "$url" "$destination"
     fi
 }
 
 main() {
-    # Проверки окружения и sudo-сессия на весь запуск
     require_fedora
     sudo -v
 
-    # Системные пакеты Fedora: git, shell, редактор, языки, утилиты, шрифты
     sudo dnf upgrade -y
 
     sudo dnf install -y git git-crypt gh glab curl jq make gcc gcc-c++ golang postgresql \
@@ -524,14 +480,12 @@ main() {
     install_system_file "$REPOSITORY/systemd/60-deep.conf" /etc/systemd/sleep.conf.d/60-deep.conf
     "$REPOSITORY/scripts/hardening.sh"
 
-    # Имя встроенного экрана (масштаб 2.25 применяется к нему)
     local output
     output="$(swaymsg -r -t get_outputs | jq -re '
         [.[] | select(.active == true and (.name | test("^eDP-[0-9]+$"))) | .name]
         | if length == 1 then .[0] else error("expected one active eDP output") end
     ')" || { echo "bootstrap: нужен один активный eDP-экран; запусти из Sway" >&2; return 1; }
 
-    # Конфиги репозитория -> симлинки; имя экрана -> sway/output.conf
     set_output_name "$REPOSITORY" "$output"
     local name
     for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
@@ -548,7 +502,6 @@ main() {
     install_firefox_userchrome
     install_firefox_policies
 
-    # Валидация и применение: рабочий стол оживает до загрузок
     sway -C -c "$CONFIGURATION_HOME/sway/config"
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
     swaymsg reload
@@ -594,38 +547,31 @@ main() {
     NKP="$HOME/projects/personal/nkp"
     make -C "$NKP" install
 
-    # Промпт: oh-my-posh
     download https://github.com/JanDeDobbeleer/oh-my-posh/releases/download/v31.9.1/posh-linux-amd64 \
         574074a4e84797180e0bda0d133da5f01fbda89ecdb450134c7e566b9a389212 "$CACHE/oh-my-posh"
     install -m 755 "$CACHE/oh-my-posh" "$HOME/.local/bin/oh-my-posh"
 
-    # Шрифт Hack Nerd Font для терминала и Neovim
     download https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/Hack.zip \
         fa24da7de7cefe7766614d27762570b20453c852fc1d5b657111666df9a5e449 "$CACHE/Hack.zip"
     mkdir -p "$HOME/.local/share/fonts/Hack"
     unzip -oq "$CACHE/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
     fc-cache -f "$HOME/.local/share/fonts/Hack"
 
-    # pi: runtime в ~/.local, конфиг в ~/.pi/agent
     clone_repository https://github.com/s3nn1k/pi-agent.git "$HOME/.pi/agent"
     node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 19)) process.exit(1)'
     npm install --global --prefix "$HOME/.local" --ignore-scripts @earendil-works/pi-coding-agent@1.3.0
     make -C "$HOME/.pi/agent" init
     "$HOME/.local/bin/pi" update --extensions
 
-    # Мои конфиг-репозитории: Neovim и тема промпта
     clone_repository https://github.com/s3nn1k/nvim.git "$CONFIGURATION_HOME/nvim"
     clone_repository https://github.com/s3nn1k/zenwritten_dark.git "$CONFIGURATION_HOME/zenwritten_dark"
-    # Инициализация Neovim: зависимости и плагины
     "$CONFIGURATION_HOME/nvim/init.sh"
 
-    # GRUB: скрытое меню + пересборка конфига загрузчика
     configure_grub
     sudo restorecon /etc/default/grub
     sudo grub2-editenv - list | grep -q menu_auto_hide && sudo grub2-editenv - unset menu_auto_hide
     sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 
-    # Zsh как shell по умолчанию
     local shell
     shell="$(command -v zsh)"
     if [[ "$(getent passwd "$(id -un)" | cut -d: -f7)" != "$shell" ]]; then
@@ -638,7 +584,6 @@ main() {
     sudo "$HOME/projects/personal/keyd-cfqv8/apply.sh"
     "$HOME/projects/personal/keyd-cfqv8/scripts/xremap-apply.sh"
 
-    # Docker: репозиторий docker-ce, движок и плагины, сервис и группа docker
     if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then
         DOCKER_REPO_FILE="$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/docker-ce.repo.XXXXXX")"
         curl -fsSL https://download.docker.com/linux/fedora/docker-ce.repo -o "$DOCKER_REPO_FILE"
@@ -662,7 +607,6 @@ main() {
         clone_repository "https://github.com/s3nn1k/obsidian-$vault_name.git" "$VAULT"
     done
     "$REPOSITORY/scripts/setup-secrets.sh" link
-    # Регистрация vault выполняется через GUI Flatpak-версии Obsidian.
 
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh и группы docker." \
         "Дальше: открой nkp, достань ключи и запусти scripts/setup-secrets.sh unlock." \
