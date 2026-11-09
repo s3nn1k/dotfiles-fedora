@@ -490,7 +490,7 @@ main() {
     local name
     for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
         sway/background.conf swaylock/config foot/foot.ini \
-        gtk-3.0/settings.ini gtk-4.0/settings.ini; do
+        gtk-3.0/settings.ini gtk-4.0/settings.ini fontconfig/fonts.conf; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
     done
     link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
@@ -556,6 +556,11 @@ main() {
     mkdir -p "$HOME/.local/share/fonts/Hack"
     unzip -oq "$CACHE/Hack.zip" -d "$HOME/.local/share/fonts/Hack"
     fc-cache -f "$HOME/.local/share/fonts/Hack"
+
+    download https://github.com/googlefonts/noto-emoji/raw/v2.047/fonts/NotoColorEmoji.ttf \
+        39ee3c587e10e89669b9ff32703261d10d5f9c4dd5ad147b6b5a1c5200591817 "$CACHE/NotoColorEmoji.ttf"
+    install -D -m 644 "$CACHE/NotoColorEmoji.ttf" "$HOME/.local/share/fonts/NotoColorEmoji/NotoColorEmoji.ttf"
+    fc-cache -f "$HOME/.local/share/fonts/NotoColorEmoji"
 
     clone_repository https://github.com/s3nn1k/pi-agent.git "$HOME/.pi/agent"
     node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 19)) process.exit(1)'
