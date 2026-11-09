@@ -1,31 +1,8 @@
 /* sidebery-sidebar.css: стили расширения Sidebery. НЕ подхватывается браузером как файл -
-   вставить в настройки Sidebery: Settings -> Styles editor. Палитра: zenbox_dark. */
+   доставляется политикой 3rdparty (managed storage, приоритетнее локального).
+   Палитра: zenbox_dark. */
 
 body, #root.root {background: #282828 !important; color: #d4d4d4 !important;}
 #root.root {--bg: #282828 !important; --fg: #d4d4d4 !important; --hbg: #504945 !important; --hfg: #ebdbb2 !important;}
 .NavigationBar {background: #282828 !important;}
-
-#root.root {--tabs-height: 36px;}
-#root.root {--tabs-inner-gap: 8px;}
-#root.root {--tabs-margin: 4px;}
-#root.root {--tabs-font: 16px sans-serif;}
-#root.root {--tabs-count-font: 16px sans-serif;}
-#root.root {--general-margin: 4px;}
-#root.root {--general-border-radius: 0px;}
-
-.Tab[data-active="true"] .body {
-	border: 2px solid #fe8019ff !important;
-	border-radius: 0px;
-}
-
-.NavigationBar .main-items .nav-item[data-class="panel"] .name-box {
-	border-width: 2px !important;
-}
-
-#root[data-act-el-color-scheme="dark"] {
-	--active-el-shadow: none;
-}
-
-.NavigationBar .nav-item[data-active="true"] {
-	border: 1px solid #fe8019ff !important;
-}
+.Tab[data-active="true"] .body {border: 2px solid #fe8019 !important;}
