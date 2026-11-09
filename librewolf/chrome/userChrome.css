@@ -143,7 +143,8 @@ menupopup > menu{ padding-block: 0.3em !important; }
 #urlbar[focused="true"] {
   border-color: #fe8019 !important;
 }
-#sidebar-box, #sidebar-header, #sidebar, .sidebar-panel {
+#sidebar-box, #sidebar-header, #sidebar, .sidebar-panel,
+#sidebar-main, sidebar-main, #sidebar-wrapper, #sidebar-launcher {
   background-color: #282828 !important;
   color: #d4d4d4 !important;
 }

@@ -146,6 +146,10 @@
 	}
 
 	* {
+		--newtab-background-color: #282828 !important;
+		--newtab-background-color-secondary: #3c3836 !important;
+		--newtab-text-primary-color: #d4d4d4 !important;
+		--newtab-icon-primary-color: #d4d4d4 !important;
 		--background-color-box:					#3c3836 !important;
 		--background-color-box-info:			#3c3836 !important;
 		--background-color-information:		    #504945 !important;
