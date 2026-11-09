@@ -30,8 +30,8 @@ def main():
 
     policies = deep_merge(base["policies"], overlay["policies"])
     third_party = policies.setdefault("3rdparty", {}).setdefault("Extensions", {})
-    for extension_id in overlay.get("policies", {}).get("3rdparty", {}).get("Extensions", {}):
-        third_party[extension_id] = {"sidebarCSS": css}
+    for extension_id, config in overlay.get("policies", {}).get("3rdparty", {}).get("Extensions", {}).items():
+        third_party[extension_id] = {**config, "sidebarCSS": css}
 
     json.dump({"policies": policies}, sys.stdout, indent=4)
     print()
