@@ -35,15 +35,13 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
   в /etc).
 - `mihomo/` - шаблон конфига VPN; `firefox/` - prefs, userChrome и политики Firefox.
 - `scripts/bootstrap.sh` - установка машины с нуля: пакеты, конфиги, hardening, VPN
-  mihomo, Telegram, gh, личные репозитории.
+  mihomo, gh, личные репозитории.
 - `scripts/cleanup.sh` - срез балласта Fedora Sway Spin и миграция на Node.js 24
   (`--dry-run`).
 - `scripts/hardening.sh` - sysctl, LLMNR off, avahi mask, firewall, PAM, auditd,
   автообновления безопасности.
 - `scripts/mihomo-apply.sh` - рендер конфига mihomo из подписки и systemd-служба.
 - `scripts/setup-secrets.sh` - unlock и линк git-crypt-секретов (postgres, firefox).
-- `scripts/telegram-extract.py` - распаковка бинарника Telegram из официального tar.xz;
-  запуск установленного приложения: `telegram`.
 - `scripts/firefox/profiles.sh` - перенос закладок Firefox между машинами.
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
   здесь не настраивается.

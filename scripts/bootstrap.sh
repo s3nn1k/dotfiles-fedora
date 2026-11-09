@@ -185,113 +185,6 @@ install_mihomo() {
     }
 }
 
-install_telegram() (
-    local local_prefix="$HOME/.local/opt/telegram-desktop"
-    local telegram_binary="$local_prefix/Telegram"
-    local telegram_link="$LOCAL_BIN/telegram"
-    local desktop_entry="$HOME/.local/share/applications/telegram-desktop.desktop"
-    local desktop_exec desktop_content staging_directory archive_path cleanup_command
-    local expected_installation=false
-
-    [[ "$HOME" == /* ]] || {
-        echo "bootstrap: HOME должен быть абсолютным путём" >&2
-        return 1
-    }
-    case "$HOME" in
-        *'%'*|*'$'*|*'`'*|*'\'*|*[[:cntrl:]]*)
-            echo "bootstrap: HOME содержит неподдерживаемые символы для ярлыка Telegram" >&2
-            return 1
-            ;;
-    esac
-
-    desktop_exec="${telegram_binary//\\/\\\\}"
-    desktop_exec="${desktop_exec//\"/\\\"}"
-    desktop_exec="\"$desktop_exec\""
-    desktop_content="[Desktop Entry]
-Type=Application
-Name=Telegram
-Exec=$desktop_exec
-Terminal=false
-Categories=Network;InstantMessaging;
-"
-
-    if [[ -L "$local_prefix" ]]; then
-        echo "bootstrap: $local_prefix является чужой ссылкой; перенеси вручную и повтори" >&2
-        return 1
-    elif [[ -e "$local_prefix" ]]; then
-        [[ -d "$local_prefix" && ! -L "$local_prefix" &&
-            -f "$telegram_binary" && ! -L "$telegram_binary" && -x "$telegram_binary" ]] || {
-            echo "bootstrap: $local_prefix не похож на ожидаемую установку; перенеси вручную и повтори" >&2
-            return 1
-        }
-        expected_installation=true
-    fi
-
-    if [[ -L "$telegram_link" ]]; then
-        [[ "$expected_installation" == true && "$(readlink "$telegram_link")" == "$telegram_binary" ]] || {
-            echo "bootstrap: $telegram_link уже занят; перенеси вручную и повтори" >&2
-            return 1
-        }
-    elif [[ -e "$telegram_link" ]]; then
-        echo "bootstrap: $telegram_link уже занят; перенеси вручную и повтори" >&2
-        return 1
-    fi
-
-    if [[ -e "$desktop_entry" || -L "$desktop_entry" ]]; then
-        [[ -f "$desktop_entry" && ! -L "$desktop_entry" ]] || {
-            echo "bootstrap: $desktop_entry уже занят; перенеси вручную и повтори" >&2
-            return 1
-        }
-        cmp -s "$desktop_entry" <(printf '%s' "$desktop_content") || {
-            echo "bootstrap: $desktop_entry уже занят; перенеси вручную и повтори" >&2
-            return 1
-        }
-    fi
-
-    if [[ "$expected_installation" != true ]]; then
-        staging_directory="$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-fedora-telegram.XXXXXX")" || {
-            echo "bootstrap: не удалось создать временный каталог Telegram" >&2
-            return 1
-        }
-        printf -v cleanup_command 'rm -rf -- %q' "$staging_directory"
-        trap "$cleanup_command" EXIT
-        archive_path="$staging_directory/telegram.tar.xz"
-
-        curl --fail --location --show-error --retry 2 --retry-max-time 600 \
-            --connect-timeout 15 --max-time 300 --proto '=https' --proto-redir '=https' \
-            --tlsv1.2 --output "$archive_path" https://telegram.org/dl/desktop/linux || {
-            echo "bootstrap: не удалось скачать официальный Telegram" >&2
-            return 1
-        }
-
-        python3 "$REPOSITORY/scripts/telegram-extract.py" "$archive_path" "$staging_directory"
-
-        [[ -d "$staging_directory/Telegram" && ! -L "$staging_directory/Telegram" &&
-            -f "$staging_directory/Telegram/Telegram" &&
-            ! -L "$staging_directory/Telegram/Telegram" &&
-            -x "$staging_directory/Telegram/Telegram" ]] || {
-            echo "bootstrap: распакованный архив не содержит исполняемый Telegram" >&2
-            return 1
-        }
-        [[ ! -e "$local_prefix" && ! -L "$local_prefix" ]] || {
-            echo "bootstrap: путь установки изменился во время скачивания; повтори" >&2
-            return 1
-        }
-        mkdir -p "$(dirname "$local_prefix")"
-        mv "$staging_directory/Telegram" "$local_prefix"
-    fi
-
-    if [[ ! -L "$telegram_link" && ! -e "$telegram_link" ]]; then
-        mkdir -p "$(dirname "$telegram_link")"
-        ln -s "$telegram_binary" "$telegram_link"
-    fi
-
-    if [[ ! -e "$desktop_entry" && ! -L "$desktop_entry" ]]; then
-        mkdir -p "$(dirname "$desktop_entry")"
-        printf '%s' "$desktop_content" > "$desktop_entry"
-    fi
-)
-
 install_metacubexd() {
     download https://github.com/MetaCubeX/metacubexd/releases/download/v1.273.1/compressed-dist.tgz \
         a178e00b67acabcda2dcef00afa90be6a7bb261e466a67dad58c8478d9553603 "$CACHE/metacubexd.tgz"
@@ -517,7 +410,6 @@ main() {
     systemctl --user enable --now ssh-agent.service
 
     install_mihomo
-    install_telegram
     install_metacubexd
 
     if gh auth token --hostname github.com >/dev/null 2>&1; then
