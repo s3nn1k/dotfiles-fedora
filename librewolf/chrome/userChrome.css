@@ -124,6 +124,30 @@ menupopup > menu{ padding-block: 0.3em !important; }
   --autocomplete-popup-color: #d4d4d4 !important;
 }
 
+/* Жёсткая подкраска: системная тема рисует тулбар и контейнер сайдбара нативными
+   цветами в обход переменных - красим элементы напрямую. */
+#navigator-toolbox > toolbar {
+  background-color: #282828 !important;
+  color: #d4d4d4 !important;
+}
+#nav-bar .toolbarbutton-1,
+#nav-bar image,
+#nav-bar label {
+  fill: #d4d4d4 !important;
+  color: #d4d4d4 !important;
+}
+#urlbar, #searchbar, .searchbar-textbox {
+  background-color: #3c3836 !important;
+  color: #d4d4d4 !important;
+}
+#urlbar[focused="true"] {
+  border-color: #fe8019 !important;
+}
+#sidebar-box, #sidebar-header, #sidebar, .sidebar-panel {
+  background-color: #282828 !important;
+  color: #d4d4d4 !important;
+}
+
 /* Sidebery-сетап: таб-бар скрыт, табы живут в сайдбаре Sidebery; плоские углы.
    Расстановка: git.symlinx.net/daccfiles .config/browser_stuff. */
 #TabsToolbar { display: none !important; }
