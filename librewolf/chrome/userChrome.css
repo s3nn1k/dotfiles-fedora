@@ -88,3 +88,11 @@ menupopup > menu{ padding-block: 0.3em !important; }
 #TabsToolbar:not(:hover) .tab-icon-image{ opacity: 1 !important; }
 #TabsToolbar:not(:hover) .tab-icon-overlay:not([pinned]){ opacity: 0 !important; }
 */
+
+/* Sidebery-сетап: таб-бар скрыт, табы живут в сайдбаре Sidebery; плоские углы.
+   Расстановка: git.symlinx.net/daccfiles .config/browser_stuff. */
+#TabsToolbar { display: none !important; }
+#sidebar-panel-header { display: none !important; }
+#sidebar-box { padding-inline-start: 0px !important; }
+
+* { border-radius: 0px !important; }

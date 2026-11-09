@@ -1,0 +1,168 @@
+/* userContent.css: тёмная тема about:-страниц.
+   Расстановка: git.symlinx.net/daccfiles .config/browser_stuff (без изменений);
+   палитра: ~/.config/nvim/lua/zenbox_dark/palette.lua. */
+
+@-moz-document url-prefix("about:") {
+	body {
+		background-color: #282828 !important;
+		color: #d4d4d4 !important;
+	}
+
+	* {
+		border-radius: 0px !important;
+	}
+
+	button:hover, .button:hover {
+		background-color: #fe8019 !important;
+		color: #282828 !important;
+	}
+
+	* {
+		--text-color:							#d4d4d4 !important;
+		--color-accent-primary:					light-dark(#fe801955, #fe8019) !important;
+		--color-accent-secondary:				light-dark(#bdae9355, #bdae93) !important;
+	}
+
+	* {
+		--color-blue-0:  #83a598 !important;
+		--color-blue-10: #83a598 !important;
+		--color-blue-20: #83a598 !important;
+		--color-blue-30: #83a598 !important;
+		--color-blue-40: #83a598 !important;
+		--color-blue-50: #83a598 !important;
+		--color-blue-60: #83a598 !important;
+		--color-blue-70: #83a598 !important;
+		--color-blue-80: #83a598 !important;
+		--color-blue-90: #83a598 !important;
+		--color-cyan-0:  #8ec07c !important;
+		--color-cyan-10: #8ec07c !important;
+		--color-cyan-20: #8ec07c !important;
+		--color-cyan-30: #8ec07c !important;
+		--color-cyan-40: #8ec07c !important;
+		--color-cyan-50: #8ec07c !important;
+		--color-cyan-60: #8ec07c !important;
+		--color-cyan-70: #8ec07c !important;
+		--color-cyan-80: #8ec07c !important;
+		--color-cyan-90: #8ec07c !important;
+		--color-gray-0:  #ebdbb2 !important;
+		--color-gray-05: #ebdbb2 !important;
+		--color-gray-10: #ebdbb2 !important;
+		--color-gray-15: #ebdbb2 !important;
+		--color-gray-20: #ebdbb2 !important;
+		--color-gray-25: #ebdbb2 !important;
+		--color-gray-30: #bdae93 !important;
+		--color-gray-35: #bdae93 !important;
+		--color-gray-40: #928374 !important;
+		--color-gray-45: #928374 !important;
+		--color-gray-50: #7c6f64 !important;
+		--color-gray-55: #504945 !important;
+		--color-gray-60: #665c54 !important;
+		--color-gray-65: #665c54 !important;
+		--color-gray-70: #3c3836 !important;
+		--color-gray-75: #3c3836 !important;
+		--color-gray-80: #282828 !important;
+		--color-gray-85: #282828 !important;
+		--color-gray-90: #282828 !important;
+		--color-green-0:  #b8bb26 !important;
+		--color-green-10: #b8bb26 !important;
+		--color-green-20: #b8bb26 !important;
+		--color-green-30: #b8bb26 !important;
+		--color-green-40: #b8bb26 !important;
+		--color-green-50: #b8bb26 !important;
+		--color-green-60: #b8bb26 !important;
+		--color-green-70: #b8bb26 !important;
+		--color-green-80: #b8bb26 !important;
+		--color-green-90: #b8bb26 !important;
+		--color-orange-0:  #fe8019 !important;
+		--color-orange-10: #fe8019 !important;
+		--color-orange-20: #fe8019 !important;
+		--color-orange-30: #fe8019 !important;
+		--color-orange-40: #fe8019 !important;
+		--color-orange-50: #fe8019 !important;
+		--color-orange-60: #fe8019 !important;
+		--color-orange-70: #fe8019 !important;
+		--color-orange-80: #fe8019 !important;
+		--color-orange-90: #fe8019 !important;
+		--color-pink-0:  #fe8019 !important;
+		--color-pink-10: #fe8019 !important;
+		--color-pink-20: #fe8019 !important;
+		--color-pink-30: #fe8019 !important;
+		--color-pink-40: #fe8019 !important;
+		--color-pink-50: #fe8019 !important;
+		--color-pink-60: #fe8019 !important;
+		--color-pink-70: #fe8019 !important;
+		--color-pink-80: #fe8019 !important;
+		--color-pink-90: #fe8019 !important;
+		--color-purple-0:  #fe8019 !important;
+		--color-purple-10: #fe8019 !important;
+		--color-purple-20: #fe8019 !important;
+		--color-purple-30: #fe8019 !important;
+		--color-purple-40: #fe8019 !important;
+		--color-purple-50: #fe8019 !important;
+		--color-purple-60: #fe8019 !important;
+		--color-purple-70: #fe8019 !important;
+		--color-purple-80: #fe8019 !important;
+		--color-purple-90: #fe8019 !important;
+		--color-red-0:  #fb4934 !important;
+		--color-red-10: #fb4934 !important;
+		--color-red-20: #fb4934 !important;
+		--color-red-30: #fb4934 !important;
+		--color-red-40: #fb4934 !important;
+		--color-red-50: #fb4934 !important;
+		--color-red-60: #fb4934 !important;
+		--color-red-70: #fb4934 !important;
+		--color-red-80: #fb4934 !important;
+		--color-red-90: #fb4934 !important;
+		--color-violet-0:  #fe8019 !important;
+		--color-violet-10: #fe8019 !important;
+		--color-violet-20: #fe8019 !important;
+		--color-violet-30: #fe8019 !important;
+		--color-violet-40: #fe8019 !important;
+		--color-violet-50: #fe8019 !important;
+		--color-violet-60: #fe8019 !important;
+		--color-violet-70: #fe8019 !important;
+		--color-violet-80: #fe8019 !important;
+		--color-violet-90: #fe8019 !important;
+		--color-violet-desaturated-0:  #fe8019 !important;
+		--color-violet-desaturated-10: #fe8019 !important;
+		--color-violet-desaturated-20: #fe8019 !important;
+		--color-violet-desaturated-30: #fe8019 !important;
+		--color-violet-desaturated-40: #fe8019 !important;
+		--color-violet-desaturated-50: #fe8019 !important;
+		--color-violet-desaturated-60: #fe8019 !important;
+		--color-violet-desaturated-70: #fe8019 !important;
+		--color-violet-desaturated-80: #fe8019 !important;
+		--color-violet-desaturated-90: #fe8019 !important;
+		--color-yellow-0:  #fabd2f !important;
+		--color-yellow-10: #fabd2f !important;
+		--color-yellow-20: #fabd2f !important;
+		--color-yellow-30: #fabd2f !important;
+		--color-yellow-40: #fabd2f !important;
+		--color-yellow-50: #fabd2f !important;
+		--color-yellow-60: #fabd2f !important;
+		--color-yellow-70: #fabd2f !important;
+		--color-yellow-80: #fabd2f !important;
+		--color-yellow-90: #fabd2f !important;
+	}
+
+	* {
+		--background-color-box:					#3c3836 !important;
+		--background-color-box-info:			#3c3836 !important;
+		--background-color-information:		    #504945 !important;
+		--background-color-canvas:				#282828 !important;
+		--border-color:							#665c54 !important;
+		--border-color-deemphasized:			#665c54 !important;
+		--button-background-color-muted:		#504945 !important;
+		--button-text-color-ghost-disabled:		#928374 !important;
+		--button-border:						2px solid var(--border-color) !important;
+		--table-row-background-color-alternate:	#3c3836 !important;
+		--text-color-accent-primary-selected:	var(--text-color) !important;
+	}
+
+	* {
+		--table-background-color:			var(--background-color-box) !important;
+		--table-border-color:				var(--border-color) !important;
+		--table-header-background-color:	var(--color-accent-primary) !important;
+		--table-row-background-color:		var(--background-color-canvas) !important;
+	}
+}
