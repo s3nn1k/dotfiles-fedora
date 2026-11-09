@@ -1,6 +1,8 @@
 /* sidebery-sidebar.css: стили расширения Sidebery. НЕ подхватывается браузером как файл -
    вставить в настройки Sidebery: Settings -> Styles editor. Палитра: zenbox_dark. */
 
+body, #root.root {background: #282828 !important; color: #d4d4d4 !important;}
+
 #root.root {--tabs-height: 36px;}
 #root.root {--tabs-inner-gap: 8px;}
 #root.root {--tabs-margin: 4px;}
