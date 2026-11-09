@@ -739,3 +739,44 @@
     --purple-60: #d3869b !important;
   }
 }
+
+/* DevTools, добивка: токены отладчика (paused/inline-preview), сетевого монитора
+   (status-code/waterfall timing) и JSON-viewer (те же --theme-* на resource://). */
+@-moz-document url-prefix("chrome://devtools/"), url-prefix("about:devtools-toolbox"),
+               url-prefix("about:debugging"), url-prefix("resource://devtools") {
+  :root {
+    --paused-background-color: rgba(142, 192, 124, 0.25) !important;
+    --paused-color: #8ec07c !important;
+    --paused-error-color: #fb4934 !important;
+    --skip-pausing-background-color: rgba(146, 131, 116, 0.25) !important;
+    --skip-pausing-color: #928374 !important;
+    --theme-inline-preview-background: #3c3836 !important;
+    --theme-inline-preview-border-color: #504945 !important;
+    --theme-inline-preview-label-pause-background: #8ec07c !important;
+    --theme-inline-preview-label-pause-color: #282828 !important;
+    --theme-inline-preview-label-trace-background: #83a598 !important;
+    --theme-inline-preview-label-trace-color: #282828 !important;
+    --status-code-color-1xx: #83a598 !important;
+    --status-code-color-2xx: #b8bb26 !important;
+    --status-code-color-4xx: #fabd2f !important;
+    --status-code-color-5xx: #fb4934 !important;
+    --status-code-color-redirect-or-cache: #d3869b !important;
+    --table-selection-background-hover: #504945 !important;
+    --table-selection-inline-icons-background-hover: #504945 !important;
+    --table-splitter-color: #3c3836 !important;
+    --table-zebra-inline-icons-background: #3c3836 !important;
+    --timing-dns-color: #83a598 !important;
+    --timing-connect-color: #b8bb26 !important;
+    --timing-ssl-color: #8ec07c !important;
+    --timing-send-color: #fabd2f !important;
+    --timing-wait-color: #928374 !important;
+    --timing-receive-color: #d3869b !important;
+    --timing-blocked-color: #fb4934 !important;
+    --timing-server-color-1: #83a598 !important;
+    --timing-server-color-2: #b8bb26 !important;
+    --timing-server-color-3: #d3869b !important;
+    --timing-server-color-total: #fe8019 !important;
+    --timing-marker-dom-content-loaded-color: #fabd2f !important;
+    --timing-marker-load-color: #fb4934 !important;
+  }
+}
