@@ -13,6 +13,10 @@
       "{3c078156-979c-498b-8990-85f7987dd929}": {
         "install_url": "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi",
         "installation_mode": "normal_installed"
+      },
+      "zenbox-dark@dotfiles": {
+        "installation_mode": "normal_installed",
+        "install_url": "file:///home/s3nn1k/dotfiles-fedora/librewolf/theme/zenbox-dark.xpi"
       }
     },
     "3rdparty": {
