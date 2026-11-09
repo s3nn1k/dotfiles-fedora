@@ -482,6 +482,66 @@ menupopup > menu{ padding-block: 0.3em !important; }
 }
 
 
+/* Добивка по аудиту: state-варианты кнопок, алиасы toolbarbutton, зебра, анимации. */
+:root {
+  --button-border-color-destructive-active: #fb4934 !important;
+  --button-border-color-destructive-disabled: #282828 !important;
+  --button-border-color-destructive-selected: #fb4934 !important;
+  --button-border-color-ghost-active: #665c54 !important;
+  --button-border-color-ghost-disabled: #282828 !important;
+  --button-border-color-ghost-hover: #665c54 !important;
+  --button-border-color-ghost-selected: #8ec07c !important;
+  --button-border-color-menu-active: #665c54 !important;
+  --button-border-color-menu-disabled: #282828 !important;
+  --button-border-color-menu-hover: #665c54 !important;
+  --button-border-color-menu-selected: #8ec07c !important;
+  --button-border-color-muted-active: #665c54 !important;
+  --button-border-color-muted-disabled: #282828 !important;
+  --button-border-color-muted-hover: #665c54 !important;
+  --button-border-color-muted-selected: #8ec07c !important;
+  --button-border-color-primary-selected: #8ec07c !important;
+  --button-border-color-selected: #8ec07c !important;
+  --button-border-color-toolbar-active: #665c54 !important;
+  --button-border-color-toolbar-disabled: #282828 !important;
+  --button-border-color-toolbar-hover: #665c54 !important;
+  --button-border-color-toolbar-selected: #8ec07c !important;
+  --button-text-color-ghost: #d4d4d4 !important;
+  --button-text-color-ghost-active: #d4d4d4 !important;
+  --button-text-color-ghost-hover: #ebdbb2 !important;
+  --button-text-color-ghost-selected: #ebdbb2 !important;
+  --button-text-color-menu: #d4d4d4 !important;
+  --button-text-color-menu-active: #d4d4d4 !important;
+  --button-text-color-menu-disabled: #928374 !important;
+  --button-text-color-menu-hover: #ebdbb2 !important;
+  --button-text-color-menu-selected: #ebdbb2 !important;
+  --button-text-color-muted: #d4d4d4 !important;
+  --button-text-color-muted-active: #d4d4d4 !important;
+  --button-text-color-muted-disabled: #928374 !important;
+  --button-text-color-muted-hover: #ebdbb2 !important;
+  --button-text-color-muted-selected: #ebdbb2 !important;
+  --button-text-color-primary-active: #282828 !important;
+  --button-text-color-primary-disabled: #928374 !important;
+  --button-text-color-primary-hover: #282828 !important;
+  --button-text-color-primary-selected: #282828 !important;
+  --button-text-color-toolbar: #d4d4d4 !important;
+  --button-text-color-toolbar-active: #d4d4d4 !important;
+  --button-text-color-toolbar-disabled: #928374 !important;
+  --button-text-color-toolbar-hover: #ebdbb2 !important;
+  --button-text-color-toolbar-selected: #ebdbb2 !important;
+  --toolbarbutton-background: #282828 !important;
+  --toolbarbutton-hover-background: #504945 !important;
+  --toolbarbutton-checked-background: #665c54 !important;
+  --toolbarbutton-checked-color: #ebdbb2 !important;
+  --toolbarbutton-hover-color: #ebdbb2 !important;
+  --table-zebra-background: #3c3836 !important;
+  --icon-color: #bdae93 !important;
+  --dimmed-highlighter-box-content-color: rgba(142, 192, 124, 0.3) !important;
+  --tab-group-suggestions-loading-animation-color-1: #8ec07c !important;
+  --tab-group-suggestions-loading-animation-color-2: #83a598 !important;
+  --urlbarview-tail150-overlay-background: #504945 !important;
+  --urlbarview-tail150-overlay-color: #d4d4d4 !important;
+}
+
 /* Жёсткая подкраска: системная тема рисует тулбар и контейнер сайдбара нативными
    цветами в обход переменных - красим элементы напрямую. */
 #navigator-toolbox > toolbar {
