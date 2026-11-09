@@ -33,7 +33,7 @@ user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);   
 // Стартовый шум и UI: онбординг, промо-блоки, фоновые пробы сети.
 user_pref("browser.aboutwelcome.enabled", false);                                       // true -> false: онбординг при первом запуске
 user_pref("browser.startup.homepage_override.mstone", "ignore");                        // не задан (пишется после апдейта) -> "ignore": подавить страницу "что нового"
-user_pref("browser.startup.homepage", "about:blank");                                 // https://start.fedoraproject.org/ (дистро Fedora) -> about:blank: пустая страница при старте
+user_pref("browser.startup.homepage", "about:newtab");                                 // https://start.fedoraproject.org/ (дистро Fedora) -> about:newtab: стартовая страница при запуске
 user_pref("browser.newtabpage.pinned", "[]");                                         // плитка start.fedoraproject.org (дистро Fedora) -> []: без закреплённой плитки Fedora
 user_pref("browser.shell.checkDefaultBrowser", false);                                  // true -> false: проверка дефолтного браузера при старте
 user_pref("browser.preferences.moreFromMozilla", false);                                // true -> false: промо-блок "Больше от Mozilla" в настройках
@@ -55,7 +55,6 @@ user_pref("media.gmp-gmpopenh264.enabled", true);                               
 // Приватность: формы ввода и фоновые предзагрузки.
 user_pref("browser.formfill.enable", false);                                            // true -> false: не запоминать историю полей форм
 user_pref("privacy.sanitize.sanitizeOnShutdown", false);
-user_pref("xpinstall.signatures.required", false);                                 // true (дефолт LibreWolf) -> false: не затирать куки и данные сайтов при закрытии браузера
 user_pref("network.prefetch-next", false);                                              // true -> false: без фоновой предзагрузки ссылок со страницы
 user_pref("network.dns.disablePrefetch", true);                                         // false -> true: без DNS-prefetch доменов со ссылок
 

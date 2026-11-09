@@ -146,11 +146,7 @@
 	}
 
 	* {
-		--newtab-background-color: #282828 !important;
-		--newtab-background-color-secondary: #3c3836 !important;
-		--newtab-text-primary-color: #d4d4d4 !important;
-		--newtab-icon-primary-color: #d4d4d4 !important;
-		--background-color-box:					#3c3836 !important;
+										--background-color-box:					#3c3836 !important;
 		--background-color-box-info:			#3c3836 !important;
 		--background-color-information:		    #504945 !important;
 		--background-color-canvas:				#282828 !important;
@@ -175,13 +171,6 @@
 	background: #665c54 !important;
 	color: #d4d4d4 !important;
 }
-
-@-moz-document url-prefix("about:newtab"), url-prefix("about:home") {
-	body, #root, .outer-wrapper, .activity-stream {
-		background: #282828 !important;
-		background-color: #282828 !important;
-		background-image: none !important;
-	}
 }
 
 @-moz-document url-prefix("view-source:") {
