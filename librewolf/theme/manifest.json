@@ -57,5 +57,10 @@
       "ntp_text": "#d4d4d4",
       "icons": "#d4d4d4"
     }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "zenbox-dark@dotfiles"
+    }
   }
 }
