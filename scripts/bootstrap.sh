@@ -227,13 +227,13 @@ install_herdr() {
     herdr integration install pi >/dev/null 2>&1 || true
 }
 
-firefox_installed() {
-    command -v firefox >/dev/null 2>&1
+librewolf_installed() {
+    command -v librewolf >/dev/null 2>&1
 }
 
-find_firefox_profiles() {
+find_librewolf_profiles() {
     local profile_root profile_directory
-    for profile_root in "$CONFIGURATION_HOME/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+    for profile_root in "$CONFIGURATION_HOME/librewolf/librewolf" "$HOME/.librewolf"; do
         [[ -d "$profile_root" ]] || continue
         for profile_directory in "$profile_root"/*/; do
             [[ -f "$profile_directory/times.json" ]] || continue
@@ -242,51 +242,51 @@ find_firefox_profiles() {
     done
 }
 
-install_firefox_prefs() {
-    local source="$REPOSITORY/firefox/user.js" profiles profile
+install_librewolf_prefs() {
+    local source="$REPOSITORY/librewolf/user.js" profiles profile
 
-    if ! firefox_installed; then
-        echo "bootstrap: firefox не установлен, пропускаю настройку профилей" >&2
+    if ! librewolf_installed; then
+        echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
         return 0
     fi
 
-    profiles="$(find_firefox_profiles)"
+    profiles="$(find_librewolf_profiles)"
     if [[ -z "$profiles" ]]; then
-        firefox -CreateProfile default
-        profiles="$(find_firefox_profiles)"
+        librewolf -CreateProfile default
+        profiles="$(find_librewolf_profiles)"
     fi
-    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль Firefox" >&2; return 1; }
+    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
 
     while IFS= read -r profile; do
         link_config "$source" "$profile/user.js"
     done <<< "$profiles"
 }
 
-install_firefox_userchrome() {
-    local source="$REPOSITORY/firefox/chrome/userChrome.css" profiles profile
+install_librewolf_userchrome() {
+    local source="$REPOSITORY/librewolf/chrome/userChrome.css" profiles profile
 
-    if ! firefox_installed; then
-        echo "bootstrap: firefox не установлен, пропускаю настройку профилей" >&2
+    if ! librewolf_installed; then
+        echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
         return 0
     fi
 
-    profiles="$(find_firefox_profiles)"
-    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль Firefox" >&2; return 1; }
+    profiles="$(find_librewolf_profiles)"
+    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
 
     while IFS= read -r profile; do
         link_config "$source" "$profile/chrome/userChrome.css"
     done <<< "$profiles"
 }
 
-install_firefox_policies() {
-    local source="$REPOSITORY/firefox/policies.json"
+install_librewolf_policies() {
+    local source="$REPOSITORY/librewolf/policies.json"
 
-    if ! firefox_installed; then
-        echo "bootstrap: firefox не установлен, пропускаю политики" >&2
+    if ! librewolf_installed; then
+        echo "bootstrap: librewolf не установлен, пропускаю политики" >&2
         return 0
     fi
 
-    sudo install -D -m 644 "$source" /etc/firefox/policies/policies.json
+    sudo install -D -m 644 "$source" /usr/share/librewolf/distribution/policies.json
 }
 
 normalize_git_url() {
@@ -391,9 +391,9 @@ main() {
     link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
     link_config "$REPOSITORY/psqlrc" "$HOME/.psqlrc"
 
-    install_firefox_prefs
-    install_firefox_userchrome
-    install_firefox_policies
+    install_librewolf_prefs
+    install_librewolf_userchrome
+    install_librewolf_policies
 
     sway -C -c "$CONFIGURATION_HOME/sway/config"
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
@@ -508,7 +508,7 @@ main() {
 
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh и группы docker." \
         "Дальше: открой nkp, достань ключи и запусти scripts/setup-secrets.sh unlock." \
-        "Firefox-профили: после unlock запусти scripts/firefox/profiles.sh reset, затем init (регистрация) и pull (закладки из ~/credentials/firefox, профили появятся в панели Firefox)." \
+        "LibreWolf-профили: после unlock запусти scripts/librewolf/profiles.sh reset, затем init (регистрация) и pull (закладки из ~/credentials/librewolf, профили появятся в панели LibreWolf)." \
         "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
 }
 

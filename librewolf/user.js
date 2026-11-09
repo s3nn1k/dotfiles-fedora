@@ -1,4 +1,4 @@
-// Firefox: prefs для снижения потребления RAM (Firefox 150, Fedora rpm).
+// LibreWolf (движок Firefox): prefs для снижения потребления RAM.
 // user.js перечитывается при каждом старте браузера; значения прилипчивые -
 // переопределяют ручные правки в about:config.
 // Формат строк ниже: дефолт -> значение: суть настройки.
@@ -54,6 +54,7 @@ user_pref("media.gmp-gmpopenh264.enabled", true);                               
 
 // Приватность: формы ввода и фоновые предзагрузки.
 user_pref("browser.formfill.enable", false);                                            // true -> false: не запоминать историю полей форм
+user_pref("privacy.sanitize.sanitizeOnShutdown", false);                                 // true (дефолт LibreWolf) -> false: не затирать куки и данные сайтов при закрытии браузера
 user_pref("network.prefetch-next", false);                                              // true -> false: без фоновой предзагрузки ссылок со страницы
 user_pref("network.dns.disablePrefetch", true);                                         // false -> true: без DNS-prefetch доменов со ссылок
 

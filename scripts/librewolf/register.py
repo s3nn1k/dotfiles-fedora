@@ -61,7 +61,7 @@ PANEL_DEFAULTS = PanelDefaults(
 
 PANEL_AVATARS = ("book", "briefcase", "flower", "heart", "shopping", "star")
 
-DEFAULT_PANEL_CONFIG_DIR = "~/credentials/firefox"
+DEFAULT_PANEL_CONFIG_DIR = "~/credentials/librewolf"
 
 STORE_ID_ATTEMPTS = 5
 
@@ -103,7 +103,7 @@ def panel_defaults(name, panel_config_dir):
 
 
 def warn(message):
-    print(f"firefox-profiles: {message}", file=sys.stderr)
+    print(f"librewolf-profiles: {message}", file=sys.stderr)
 
 
 def usage():
@@ -199,7 +199,7 @@ def create_store(profiles_root):
                 pass
         raise
     os.chmod(store_path, 0o600)
-    print(f"firefox-profiles: создан стор панели (StoreID={store_id})")
+    print(f"librewolf-profiles: создан стор панели (StoreID={store_id})")
     return Store(store_id=store_id, path=store_path)
 
 
@@ -223,15 +223,15 @@ def prepare_backups(ini_path, store_path):
 
 
 def install_directory():
-    executable = shutil.which("firefox")
+    executable = shutil.which("librewolf")
     if not executable:
         return ""
     install_dir = os.path.dirname(os.path.realpath(executable))
     if install_dir in ("/usr/bin", "/bin", "/usr/sbin"):
         install_dir = ""
         for lib_dir in ("/usr/lib64", "/usr/lib"):
-            if os.path.isfile(os.path.join(lib_dir, "firefox", "firefox")):
-                install_dir = os.path.join(lib_dir, "firefox")
+            if os.path.isfile(os.path.join(lib_dir, "librewolf", "librewolf")):
+                install_dir = os.path.join(lib_dir, "librewolf")
                 break
     if not install_dir or not os.path.isfile(os.path.join(install_dir, "application.ini")):
         return ""
@@ -264,7 +264,7 @@ def ensure_install_binding(names, profiles_root, store):
         if ensure_ini_section(installs_path, f"[{hash_value}]", section_entries(installs_path, f"[{hash_value}]")):
             changed = True
         if changed:
-            print(f"firefox-profiles: install-привязка {first_path} записана (Install{hash_value})")
+            print(f"librewolf-profiles: install-привязка {first_path} записана (Install{hash_value})")
         return True
     ini_hashes = ini_section_hashes(ini_path, INSTALL_HEADER_RE)
     installs_hashes = ini_section_hashes(os.path.join(profiles_root, "installs.ini"), HASH_HEADER_RE)
@@ -281,7 +281,7 @@ def ensure_install_binding(names, profiles_root, store):
     ):
         changed = True
     if changed:
-        print(f"firefox-profiles: install-привязка {first_path} записана в секцию {hash_value}")
+        print(f"librewolf-profiles: install-привязка {first_path} записана в секцию {hash_value}")
     return True
 
 
@@ -394,9 +394,9 @@ def register(names, profiles_root, panel_config_dir):
             failed = True
             continue
         if outcome == REGISTERED:
-            print(f"firefox-profiles: {name}: зарегистрирован в панели (StoreID={store.store_id})")
+            print(f"librewolf-profiles: {name}: зарегистрирован в панели (StoreID={store.store_id})")
         else:
-            print(f"firefox-profiles: {name}: уже зарегистрирован в панели")
+            print(f"librewolf-profiles: {name}: уже зарегистрирован в панели")
     if failed:
         sys.exit(1)
     try:
@@ -407,8 +407,8 @@ def register(names, profiles_root, panel_config_dir):
     if not bound:
         first_slug = names[0]
         warn(
-            f"install-привязка не обеспечена - запусти и штатно закрой Firefox (firefox -P {first_slug}), "
-            "затем повтори init - Firefox сам запишет привязку"
+            f"install-привязка не обеспечена - запусти и штатно закрой LibreWolf (librewolf -P {first_slug}), "
+            "затем повтори init - LibreWolf сам запишет привязку"
         )
 
 

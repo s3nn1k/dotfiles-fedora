@@ -1,4 +1,4 @@
-/* userChrome.css: минимизация UI Firefox 150 (Fedora rpm).
+/* userChrome.css: минимизация UI LibreWolf/Firefox 150+.
    Сниппеты: MrOtherGuy/firefox-csshacks, https://github.com/MrOtherGuy/firefox-csshacks (MPL-2.0) -
    тела без изменений, лицензионные заголовки сохранены целиком. Сборка: 2026-11-04.
    Скрытие кнопок аккаунта Firefox и расширений - осознанное решение: расширения доступны через about:addons. */

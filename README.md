@@ -33,7 +33,7 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
   `wallpapers/` - конфиги, которые bootstrap раскладывает симлинками.
 - `systemd/` - user-юнит ssh-agent и drop-in'ы logind и sleep (последние ставятся копиями
   в /etc).
-- `mihomo/` - шаблон конфига VPN; `firefox/` - prefs, userChrome и политики Firefox.
+- `mihomo/` - шаблон конфига VPN; `librewolf/` - prefs, userChrome и политики LibreWolf.
 - `scripts/bootstrap.sh` - установка машины с нуля: пакеты, конфиги, hardening, VPN
   mihomo, gh, личные репозитории.
 - `scripts/cleanup.sh` - срез балласта Fedora Sway Spin и миграция на Node.js 24
@@ -41,7 +41,7 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 - `scripts/hardening.sh` - sysctl, LLMNR off, avahi mask, firewall, PAM, auditd,
   автообновления безопасности.
 - `scripts/mihomo-apply.sh` - рендер конфига mihomo из подписки и systemd-служба.
-- `scripts/setup-secrets.sh` - unlock и линк git-crypt-секретов (postgres, firefox).
-- `scripts/firefox/profiles.sh` - перенос закладок Firefox между машинами.
+- `scripts/setup-secrets.sh` - unlock и линк git-crypt-секретов (postgres, librewolf).
+- `scripts/librewolf/profiles.sh` - перенос закладок LibreWolf между машинами.
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
   здесь не настраивается.

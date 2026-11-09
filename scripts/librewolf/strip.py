@@ -32,7 +32,7 @@ def main():
         print(str(error), file=sys.stderr)
         sys.exit(1)
     print(
-        f"firefox-profiles: {name}: places.sqlite без истории:"
+        f"librewolf-profiles: {name}: places.sqlite без истории:"
         f" {before / 1048576:.2f}МБ -> {after / 1048576:.2f}МБ"
     )
 
