@@ -564,7 +564,8 @@ main() {
     "$HOME/.local/bin/pi" update --extensions
 
     clone_repository https://github.com/s3nn1k/nvim.git "$CONFIGURATION_HOME/nvim"
-    clone_repository https://github.com/s3nn1k/zenwritten_dark.git "$CONFIGURATION_HOME/zenwritten_dark"
+    mkdir -p "$CONFIGURATION_HOME/omp"
+    link_config "$REPOSITORY/omp/prompt.omp.json" "$CONFIGURATION_HOME/omp/prompt.omp.json"
     "$CONFIGURATION_HOME/nvim/init.sh"
 
     configure_grub
