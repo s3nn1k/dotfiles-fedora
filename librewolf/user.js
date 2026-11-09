@@ -54,7 +54,8 @@ user_pref("media.gmp-gmpopenh264.enabled", true);                               
 
 // Приватность: формы ввода и фоновые предзагрузки.
 user_pref("browser.formfill.enable", false);                                            // true -> false: не запоминать историю полей форм
-user_pref("privacy.sanitize.sanitizeOnShutdown", false);                                 // true (дефолт LibreWolf) -> false: не затирать куки и данные сайтов при закрытии браузера
+user_pref("privacy.sanitize.sanitizeOnShutdown", false);
+user_pref("xpinstall.signatures.required", false);                                 // true (дефолт LibreWolf) -> false: не затирать куки и данные сайтов при закрытии браузера
 user_pref("network.prefetch-next", false);                                              // true -> false: без фоновой предзагрузки ссылок со страницы
 user_pref("network.dns.disablePrefetch", true);                                         // false -> true: без DNS-prefetch доменов со ссылок
 
