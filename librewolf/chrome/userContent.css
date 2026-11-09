@@ -183,3 +183,21 @@
 		background-image: none !important;
 	}
 }
+
+@-moz-document url-prefix("view-source:") {
+	:root, body {
+		background: #282828 !important;
+		color: #d4d4d4 !important;
+	}
+	span[id]::before {
+		color: #7c6f64 !important;
+	}
+	.start-tag, .end-tag { color: #8ec07c !important; }
+	.comment { color: #928374 !important; }
+	.cdata, .pi { color: #d3869b !important; }
+	.doctype, .markupdeclaration { color: #bdae93 !important; }
+	.entity { color: #fabd2f !important; }
+	.attribute-name { color: #83a598 !important; }
+	.attribute-value { color: #b8bb26 !important; }
+	.error { color: #fb4934 !important; background: rgba(251, 73, 52, 0.2) !important; }
+}
