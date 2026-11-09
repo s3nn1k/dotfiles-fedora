@@ -89,6 +89,41 @@ menupopup > menu{ padding-block: 0.3em !important; }
 #TabsToolbar:not(:hover) .tab-icon-overlay:not([pinned]){ opacity: 0 !important; }
 */
 
+/* Тема хрома: палитра zenbox_dark. Тему браузера движок LW 159 не материализует
+   (аддон-кэш, ехавший из Firefox, валидируется по чужому install-хэшу) - красим переменными. */
+:root {
+  --toolbar-bgcolor: #282828 !important;
+  --toolbar-fg: #d4d4d4 !important;
+  --toolbar-non-lwt-bgcolor: #282828 !important;
+  --toolbar-non-lwt-textcolor: #d4d4d4 !important;
+  --chrome-content-separator-color: #3c3836 !important;
+  --toolbar-field-background-color: #3c3836 !important;
+  --toolbar-field-color: #d4d4d4 !important;
+  --toolbar-field-border-color: #504945 !important;
+  --toolbar-field-focus-background-color: #3c3836 !important;
+  --toolbar-field-focus-color: #ebdbb2 !important;
+  --toolbar-field-focus-border-color: #fe8019 !important;
+  --arrowpanel-background: #3c3836 !important;
+  --arrowpanel-color: #d4d4d4 !important;
+  --arrowpanel-border-color: #504945 !important;
+  --panel-border-color: #504945 !important;
+  --tab-selected-bgcolor: #3c3836 !important;
+  --tab-loading-fill: #fe8019 !important;
+  --focus-outline-color: #fe8019 !important;
+  --button-primary-bgcolor: #fe8019 !important;
+  --button-primary-color: #282828 !important;
+  --buttons-destructive-bgcolor: #fb4934 !important;
+  --urlbarView-highlight-background: #504945 !important;
+  --urlbar-popup-url-color: #83a598 !important;
+  --toolbarbutton-icon-fill: #d4d4d4 !important;
+  --toolbarbutton-hover-background: #504945 !important;
+  --toolbarbutton-active-background: #665c54 !important;
+  --sidebar-background-color: #282828 !important;
+  --sidebar-text-color: #d4d4d4 !important;
+  --autocomplete-popup-background: #3c3836 !important;
+  --autocomplete-popup-color: #d4d4d4 !important;
+}
+
 /* Sidebery-сетап: таб-бар скрыт, табы живут в сайдбаре Sidebery; плоские углы.
    Расстановка: git.symlinx.net/daccfiles .config/browser_stuff. */
 #TabsToolbar { display: none !important; }
