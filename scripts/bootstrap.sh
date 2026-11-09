@@ -286,7 +286,14 @@ install_librewolf_policies() {
         return 0
     fi
 
-    sudo install -D -m 644 "$source" /usr/share/librewolf/distribution/policies.json
+    local merged
+    merged="$(mktemp)"
+    python3 "$REPOSITORY/scripts/librewolf/merge-policies.py" \
+        "$source" \
+        "$REPOSITORY/librewolf/chrome/sidebery-sidebar.css" \
+        /usr/share/librewolf/distribution/policies.json > "$merged"
+    sudo install -D -m 644 "$merged" /usr/share/librewolf/distribution/policies.json
+    rm -f "$merged"
 }
 
 normalize_git_url() {
