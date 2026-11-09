@@ -170,3 +170,16 @@
 		--table-row-background-color:		var(--background-color-canvas) !important;
 	}
 }
+
+::selection {
+	background: #665c54 !important;
+	color: #d4d4d4 !important;
+}
+
+@-moz-document url-prefix("about:newtab"), url-prefix("about:home") {
+	body, #root, .outer-wrapper, .activity-stream {
+		background: #282828 !important;
+		background-color: #282828 !important;
+		background-image: none !important;
+	}
+}
