@@ -1,32 +1,32 @@
 # herdr — config.toml (симлинк из ~/dotfiles-fedora/herdr/config.toml)
 onboarding = false
 
-# --- тема: zenwritten_dark ----------------------------------------------------
-# оттенки — палитра zenwritten_dark.omp.json; фон и поверхности — bg foot
-# #15191f и производные (в omp-теме фона нет)
+# --- тема: pi gruvbox-dark-soft ----------------------------------------------
+# оттенки и поверхности — палитра pi gruvbox-dark-soft; canvas и текст —
+# дефолты foot (#15191f / #d4d4d4)
 [theme]
 name = "terminal"
 
 [theme.custom]
 text = "#d4d4d4"
 subtext0 = "#d4d4d4"
-surface_dim = "#12161b"
-surface0 = "#1b2027"
-surface1 = "#232931"
-overlay0 = "#4a5261"
-overlay1 = "#5b6472"
+surface_dim = "#32302f"
+surface0 = "#3c3836"
+surface1 = "#504945"
+overlay0 = "#504945"
+overlay1 = "#7c6f64"
 sidebar_bg = "#15191f"
-active_row_bg = "#232931"
-selection_bg = "#2a3140"
+active_row_bg = "#3c3836"
+selection_bg = "#665c54"
 panel_bg = "#15191f"
-accent = "#608b4e"
-red = "#f48771"
-green = "#608b4e"
-yellow = "#e5c07b"
-blue = "#608b4e"
-teal = "#e5c07b"
-peach = "#f48771"
-mauve = "#e5c07b"
+accent = "#83a598"
+red = "#fb4934"
+green = "#b8bb26"
+yellow = "#fabd2f"
+blue = "#83a598"
+teal = "#8ec07c"
+peach = "#fe8019"
+mauve = "#d3869b"
 
 # --- клавиши -------------------------------------------------------------------
 [keys]
