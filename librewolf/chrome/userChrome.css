@@ -507,6 +507,11 @@ menupopup > menu{ padding-block: 0.3em !important; }
   color: #d4d4d4 !important;
 }
 
+::selection {
+  background: #665c54 !important;
+  color: #d4d4d4 !important;
+}
+
 /* Sidebery-сетап: таб-бар скрыт, табы живут в сайдбаре Sidebery; плоские углы.
    Расстановка: git.symlinx.net/daccfiles .config/browser_stuff. */
 #TabsToolbar { display: none !important; }
