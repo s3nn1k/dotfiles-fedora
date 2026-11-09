@@ -1,0 +1,61 @@
+{
+  "manifest_version": 2,
+  "version": "1.0",
+  "name": "zenbox-dark",
+  "theme": {
+    "colors": {
+      "frame": "#282828",
+      "frame_inactive": "#282828",
+      "toolbar": "#3c3836",
+      "toolbar_text": "#d4d4d4",
+      "bookmark_text": "#d4d4d4",
+      "tab_background_text": "#bdae93",
+      "tab_line": "#8ec07c",
+      "tab_loading": "#8ec07c",
+      "toolbar_field": "#3c3836",
+      "toolbar_field_text": "#d4d4d4",
+      "toolbar_field_border": "#504945",
+      "toolbar_field_focus": "#3c3836",
+      "toolbar_field_text_focus": "#ebdbb2",
+      "toolbar_field_border_focus": "#8ec07c",
+      "popup": "#3c3836",
+      "popup_text": "#d4d4d4",
+      "popup_border": "#504945",
+      "sidebar": "#282828",
+      "sidebar_text": "#d4d4d4",
+      "sidebar_highlight": "#504945",
+      "sidebar_highlight_text": "#ebdbb2",
+      "ntp_background": "#282828",
+      "ntp_text": "#d4d4d4",
+      "icons": "#d4d4d4"
+    }
+  },
+  "dark_theme": {
+    "colors": {
+      "frame": "#282828",
+      "frame_inactive": "#282828",
+      "toolbar": "#3c3836",
+      "toolbar_text": "#d4d4d4",
+      "bookmark_text": "#d4d4d4",
+      "tab_background_text": "#bdae93",
+      "tab_line": "#8ec07c",
+      "tab_loading": "#8ec07c",
+      "toolbar_field": "#3c3836",
+      "toolbar_field_text": "#d4d4d4",
+      "toolbar_field_border": "#504945",
+      "toolbar_field_focus": "#3c3836",
+      "toolbar_field_text_focus": "#ebdbb2",
+      "toolbar_field_border_focus": "#8ec07c",
+      "popup": "#3c3836",
+      "popup_text": "#d4d4d4",
+      "popup_border": "#504945",
+      "sidebar": "#282828",
+      "sidebar_text": "#d4d4d4",
+      "sidebar_highlight": "#504945",
+      "sidebar_highlight_text": "#ebdbb2",
+      "ntp_background": "#282828",
+      "ntp_text": "#d4d4d4",
+      "icons": "#d4d4d4"
+    }
+  }
+}
