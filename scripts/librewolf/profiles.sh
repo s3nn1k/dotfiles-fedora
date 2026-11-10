@@ -199,8 +199,9 @@ cmd_init() {
             echo "librewolf-profiles: $name: user.js и chrome не линкованы" >&2
             continue
         fi
-        link_profile_entry "$SCRIPT_DIR/../../librewolf/user.js" "$profile_dir/user.js" "$name"
-        link_profile_entry "$SCRIPT_DIR/../../librewolf/chrome" "$profile_dir/chrome" "$name"
+        local config_home="$HOME/projects/personal/librewolf-config"
+        link_profile_entry "$config_home/user.js" "$profile_dir/user.js" "$name"
+        link_profile_entry "$config_home/chrome" "$profile_dir/chrome" "$name"
     done
     "$SCRIPT_DIR/register.py" "$PROFILES_ROOT" register "${PROFILE_NAMES[@]}" || failed=1
     [[ $failed -eq 0 ]] || exit 1

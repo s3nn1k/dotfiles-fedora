@@ -1,9 +1,0 @@
-/* sidebery-sidebar.css: стили расширения Sidebery. НЕ подхватывается браузером как файл -
-   доставляется политикой 3rdparty (managed storage, приоритетнее локального).
-   Палитра: zenbox_dark. */
-
-body, #root.root {background: #282828 !important; color: #d4d4d4 !important;}
-#root.root {--bg: #282828 !important; --fg: #d4d4d4 !important; --hbg: #504945 !important; --hfg: #ebdbb2 !important;}
-.NavigationBar {background: #282828 !important;}
-.Tab[data-active="true"] .body {border: 2px solid #8ec07c !important;}
-::selection {background: #665c54 !important; color: #d4d4d4 !important;}

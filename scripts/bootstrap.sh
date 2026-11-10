@@ -243,7 +243,7 @@ find_librewolf_profiles() {
 }
 
 install_librewolf_prefs() {
-    local source="$REPOSITORY/librewolf/user.js" profiles profile
+    local source="$HOME/projects/personal/librewolf-config/user.js" profiles profile
 
     if ! librewolf_installed; then
         echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
@@ -263,7 +263,7 @@ install_librewolf_prefs() {
 }
 
 install_librewolf_userchrome() {
-    local source="$REPOSITORY/librewolf/chrome/userChrome.css" profiles profile
+    local source="$HOME/projects/personal/librewolf-config/chrome/userChrome.css" profiles profile
 
     if ! librewolf_installed; then
         echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
@@ -279,7 +279,7 @@ install_librewolf_userchrome() {
 }
 
 install_librewolf_policies() {
-    local source="$REPOSITORY/librewolf/policies.json"
+    local source="$HOME/projects/personal/librewolf-config/policies.json"
 
     if ! librewolf_installed; then
         echo "bootstrap: librewolf не установлен, пропускаю политики" >&2
@@ -288,9 +288,10 @@ install_librewolf_policies() {
 
     local merged
     merged="$(mktemp)"
-    python3 "$REPOSITORY/scripts/librewolf/merge-policies.py" \
+    local config_home="$HOME/projects/personal/librewolf-config"
+    python3 "$config_home/merge-policies.py" \
         "$source" \
-        "$REPOSITORY/librewolf/chrome/sidebery-sidebar.css" \
+        "$config_home/chrome/sidebery-sidebar.css" \
         /usr/share/librewolf/distribution/policies.json > "$merged"
     sudo install -D -m 644 "$merged" /usr/share/librewolf/distribution/policies.json
     rm -f "$merged"
@@ -437,6 +438,7 @@ main() {
         "https://github.com/s3nn1k/go-service-template.git|$HOME/projects/personal/go-service-template"
         "https://github.com/s3nn1k/nkp.git|$HOME/projects/personal/nkp"
         "https://github.com/s3nn1k/keyd-cfqv8.git|$HOME/projects/personal/keyd-cfqv8"
+        "https://github.com/s3nn1k/librewolf-config.git|$HOME/projects/personal/librewolf-config"
     )
     for repository_entry in "${PERSONAL_REPOSITORIES[@]}"; do
         repository_url="${repository_entry%%|*}"
