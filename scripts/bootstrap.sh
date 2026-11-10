@@ -262,8 +262,8 @@ install_librewolf_prefs() {
     done <<< "$profiles"
 }
 
-install_librewolf_userchrome() {
-    local source="$HOME/projects/personal/librewolf-config/chrome/userChrome.css" profiles profile
+install_librewolf_chrome() {
+    local source="$HOME/projects/personal/librewolf-config/chrome" profiles profile
 
     if ! librewolf_installed; then
         echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
@@ -273,8 +273,21 @@ install_librewolf_userchrome() {
     profiles="$(find_librewolf_profiles)"
     [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
 
+    # Каталог целиком: css темы, keymap.uc.js, keymap.json и вендор fx-autoconfig.
+    # link_config файловый, поэтому симлинк каталога проверяем сами.
+    local resolved
+    resolved="$(readlink -f "$source")"
     while IFS= read -r profile; do
-        link_config "$source" "$profile/chrome/userChrome.css"
+        if [[ -L "$profile/chrome" ]]; then
+            [[ "$(readlink -f "$profile/chrome")" == "$resolved" ]] && continue
+            echo "bootstrap: $profile/chrome чужой симлинк; перенеси вручную и повтори" >&2
+            return 1
+        fi
+        if [[ -e "$profile/chrome" ]]; then
+            echo "bootstrap: $profile/chrome существует; перенеси вручную и повтори" >&2
+            return 1
+        fi
+        ln -s "$resolved" "$profile/chrome"
     done <<< "$profiles"
 }
 
@@ -412,7 +425,7 @@ main() {
     link_config "$REPOSITORY/psqlrc" "$HOME/.psqlrc"
 
     install_librewolf_prefs
-    install_librewolf_userchrome
+    install_librewolf_chrome
     install_librewolf_policies
     install_librewolf_autoconfig
 
