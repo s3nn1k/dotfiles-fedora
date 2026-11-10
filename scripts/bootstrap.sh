@@ -297,6 +297,18 @@ install_librewolf_policies() {
     rm -f "$merged"
 }
 
+install_librewolf_autoconfig() {
+    local config_home="$HOME/projects/personal/librewolf-config"
+
+    if ! librewolf_installed; then
+        echo "bootstrap: librewolf не установлен, пропускаю autoconfig" >&2
+        return 0
+    fi
+
+    sudo python3 "$config_home/scripts/install-autoconfig.py" --files
+    python3 "$config_home/scripts/install-autoconfig.py" --cache
+}
+
 normalize_git_url() {
     local url="$1"
     url="${url%/}"
@@ -402,6 +414,7 @@ main() {
     install_librewolf_prefs
     install_librewolf_userchrome
     install_librewolf_policies
+    install_librewolf_autoconfig
 
     sway -C -c "$CONFIGURATION_HOME/sway/config"
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
