@@ -289,7 +289,7 @@ install_librewolf_policies() {
     local merged
     merged="$(mktemp)"
     local config_home="$HOME/projects/personal/librewolf-config"
-    python3 "$config_home/merge-policies.py" \
+    python3 "$config_home/scripts/merge-policies.py" \
         "$source" \
         "$config_home/chrome/sidebery-sidebar.css" \
         /usr/share/librewolf/distribution/policies.json > "$merged"
