@@ -50,7 +50,7 @@ window#waybar {
 #backlight,
 #battery,
 #clock {
-    padding: 0 8px;
+    padding: 0 5px;
 }
 
 #pulseaudio {
@@ -83,7 +83,7 @@ window#waybar {
 }
 
 #custom-language {
-    padding: 0 8px;
+    padding: 0 5px;
 }
 
 #custom-language.lang-ru {
