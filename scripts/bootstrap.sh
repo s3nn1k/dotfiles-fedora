@@ -259,11 +259,10 @@ install_librewolf_prefs() {
     local source="$HOME/projects/personal/librewolf-config/user.js" profiles profile
 
     profiles="$(find_librewolf_profiles)"
-    if [[ -z "$profiles" ]]; then
-        librewolf -CreateProfile default
-        profiles="$(find_librewolf_profiles)"
-    fi
-    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
+    [[ -n "$profiles" ]] || {
+        echo "bootstrap: не найден ни один профиль LibreWolf; восстанови через scripts/librewolf/profiles.sh и перезапусти" >&2
+        return 1
+    }
 
     while IFS= read -r profile; do
         link_config "$source" "$profile/user.js"
