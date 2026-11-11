@@ -231,6 +231,19 @@ librewolf_installed() {
     command -v librewolf >/dev/null 2>&1
 }
 
+install_librewolf() {
+    if librewolf_installed; then
+        echo "librewolf уже установлен"
+        return 0
+    fi
+    download https://repo.librewolf.net/librewolf.repo \
+        0706a3f9295f538e3f590fa738fc254884eb58182c93e9ed0bdf4a20d395a392 "$CACHE/librewolf.repo"
+    if [[ ! -f /etc/yum.repos.d/librewolf.repo ]]; then
+        sudo install -D -m 644 "$CACHE/librewolf.repo" /etc/yum.repos.d/librewolf.repo
+    fi
+    sudo dnf install -y librewolf
+}
+
 find_librewolf_profiles() {
     local profile_root profile_directory
     for profile_root in "$CONFIGURATION_HOME/librewolf/librewolf" "$HOME/.librewolf"; do
@@ -244,11 +257,6 @@ find_librewolf_profiles() {
 
 install_librewolf_prefs() {
     local source="$HOME/projects/personal/librewolf-config/user.js" profiles profile
-
-    if ! librewolf_installed; then
-        echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
-        return 0
-    fi
 
     profiles="$(find_librewolf_profiles)"
     if [[ -z "$profiles" ]]; then
@@ -264,11 +272,6 @@ install_librewolf_prefs() {
 
 install_librewolf_chrome() {
     local source="$HOME/projects/personal/librewolf-config/chrome" profiles profile
-
-    if ! librewolf_installed; then
-        echo "bootstrap: librewolf не установлен, пропускаю настройку профилей" >&2
-        return 0
-    fi
 
     profiles="$(find_librewolf_profiles)"
     [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
@@ -294,11 +297,6 @@ install_librewolf_chrome() {
 install_librewolf_policies() {
     local source="$HOME/projects/personal/librewolf-config/policies.json"
 
-    if ! librewolf_installed; then
-        echo "bootstrap: librewolf не установлен, пропускаю политики" >&2
-        return 0
-    fi
-
     local merged
     merged="$(mktemp)"
     local config_home="$HOME/projects/personal/librewolf-config"
@@ -312,11 +310,6 @@ install_librewolf_policies() {
 
 install_librewolf_autoconfig() {
     local config_home="$HOME/projects/personal/librewolf-config"
-
-    if ! librewolf_installed; then
-        echo "bootstrap: librewolf не установлен, пропускаю autoconfig" >&2
-        return 0
-    fi
 
     sudo python3 "$config_home/scripts/install-autoconfig.py" --files
     python3 "$config_home/scripts/install-autoconfig.py" --cache
@@ -401,6 +394,7 @@ main() {
     sudo dnf install -y --allowerasing nodejs24 nodejs24-npm nodejs24-bin nodejs24-npm-bin
 
     mkdir -p "$CACHE" "$LOCAL_BIN"
+    install_librewolf
     install_command "$REPOSITORY/bin/swayidle_laptop.py" swayidle-laptop
     install_system_file "$REPOSITORY/systemd/logind/lid.conf" /etc/systemd/logind.conf.d/lid.conf
     install_system_file "$REPOSITORY/systemd/sleep/60-deep.conf" /etc/systemd/sleep.conf.d/60-deep.conf
@@ -424,11 +418,6 @@ main() {
     link_config "$REPOSITORY/zprofile" "$HOME/.zprofile"
     link_config "$REPOSITORY/gitconfig" "$HOME/.gitconfig"
     link_config "$REPOSITORY/psqlrc" "$HOME/.psqlrc"
-
-    install_librewolf_prefs
-    install_librewolf_chrome
-    install_librewolf_policies
-    install_librewolf_autoconfig
 
     sway -C -c "$CONFIGURATION_HOME/sway/config"
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
@@ -475,6 +464,10 @@ main() {
         destination="${repository_entry#*|}"
         clone_repository "$repository_url" "$destination"
     done
+    install_librewolf_prefs
+    install_librewolf_chrome
+    install_librewolf_policies
+    install_librewolf_autoconfig
     NKP="$HOME/projects/personal/nkp"
     make -C "$NKP" install
 
