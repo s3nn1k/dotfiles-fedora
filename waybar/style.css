@@ -39,18 +39,26 @@ window#waybar {
     color: #d4d4d4;
 }
 
-#tray {
-    padding: 0 10px;
+#tray,
+#idle_inhibitor,
+#pulseaudio,
+#network,
+#power-profiles-daemon,
+#cpu,
+#memory,
+#temperature,
+#backlight,
+#battery,
+#clock {
+    padding: 0 8px;
 }
 
 #pulseaudio {
     color: #83a598;
-    padding: 0 10px;
 }
 
 #network {
     color: #8ec07c;
-    padding: 0 10px;
 }
 
 #network.disconnected {
@@ -59,7 +67,6 @@ window#waybar {
 
 #battery {
     color: #b8bb26;
-    padding: 0 10px;
 }
 
 #battery.warning {
@@ -76,7 +83,7 @@ window#waybar {
 }
 
 #custom-language {
-    padding: 0 10px;
+    padding: 0 8px;
 }
 
 #custom-language.lang-ru {
