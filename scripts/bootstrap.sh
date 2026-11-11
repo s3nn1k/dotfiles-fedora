@@ -416,7 +416,7 @@ main() {
     local name
     for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
         sway/background.conf swaylock/config foot/foot.ini rofi/config.rasi \
-        waybar/config.jsonc waybar/style.css \
+        waybar/config.jsonc waybar/style.css dunst/dunstrc \
         gtk-3.0/settings.ini gtk-4.0/settings.ini fontconfig/fonts.conf; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
     done
@@ -434,6 +434,7 @@ main() {
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
     rofi -config "$CONFIGURATION_HOME/rofi/config.rasi" -dump-theme >/dev/null
     swaymsg reload
+    systemctl --user restart waybar.service dunst.service
 
     install_command "$REPOSITORY/bin/credentials-setup.sh" credentials-setup
     install_command "$REPOSITORY/bin/git-crypt-repo.sh" git-crypt-repo
