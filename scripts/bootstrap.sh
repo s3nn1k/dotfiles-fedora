@@ -422,7 +422,6 @@ main() {
     foot --check-config --config="$CONFIGURATION_HOME/foot/foot.ini"
     rofi -config "$CONFIGURATION_HOME/rofi/config.rasi" -dump-theme >/dev/null
     swaymsg reload
-    pkill -USR2 waybar || true
     systemctl --user restart dunst.service
 
     install_command "$REPOSITORY/bin/credentials-setup.sh" credentials-setup
