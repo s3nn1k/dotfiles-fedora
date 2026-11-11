@@ -3,7 +3,7 @@ set -euo pipefail
 
 DRY_RUN=false
 ALL_LANGPACKS="glibc-all-langpacks"
-BLOCK_ORDER=(leftovers firmware guest-agents installer printing telemetry misc node24 langpacks finish)
+BLOCK_ORDER=(leftovers firmware guest-agents installer printing telemetry misc apps node24 langpacks finish)
 export PATH="$HOME/.local/bin:$PATH"
 
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -56,6 +56,13 @@ block_packages() {
         misc)
             printf '%s\n' iscsi-initiator-utils nfs-utils dnsmasq words \
                 minicom lrzsz
+            ;;
+        apps)
+            printf '%s\n' firefox firefox-langpacks tmux mpv nwg-wrapper \
+                fprintd fprintd-pam \
+                NetworkManager-openvpn-gnome NetworkManager-libreswan-gnome \
+                NetworkManager-openconnect-gnome NetworkManager-vpnc-gnome \
+                NetworkManager-sstp-gnome NetworkManager-l2tp-gnome
             ;;
         node24)
             printf '%s\n' nodejs22 nodejs22-bin nodejs22-libs nodejs22-npm nodejs22-npm-bin \
