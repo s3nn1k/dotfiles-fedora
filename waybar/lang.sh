@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-active_layout_name() {
-    swaymsg -t get_inputs | jq -r '[.[] | select(.type == "keyboard")][0].xkb_active_layout_name // ""'
+layout_state() {
+    swaymsg -t get_inputs | jq -c '
+        [.[] | select(.type == "keyboard")] as $keyboards
+        | (($keyboards | map(select((.identifier | test("keyd|xremap|virtual")) | not)) | .[0]) // $keyboards[0])
+        | (.xkb_active_layout_name // "") as $long
+        | ({"English (US)": "us", "Russian": "ru"}[$long] // $long) as $short
+        | {text: $short, tooltip: $long, class: ("lang-" + $short)}
+    '
 }
 
-layout_short() {
-    case "$1" in
-        "English (US)") echo "us" ;;
-        "Russian") echo "ru" ;;
-        *) echo "$1" ;;
-    esac
-}
-
-long_name="$(active_layout_name)"
-short_name="$(layout_short "$long_name")"
-jq -nc --arg text "$short_name" --arg tooltip "$long_name" \
-    '{text: $text, tooltip: $tooltip, class: ("lang-" + $text)}'
+layout_state
+swaymsg -m -t subscribe '["input"]' | while read -r _event; do
+    layout_state
+done
