@@ -134,5 +134,8 @@
             ]
         },
         "on-click": "pavucontrol"
+    },
+    "sway/language": {
+        "format": "..."
     }
 }
