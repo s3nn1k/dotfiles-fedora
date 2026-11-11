@@ -136,6 +136,6 @@
         "on-click": "pavucontrol"
     },
     "sway/language": {
-        "format": "..."
+        "format": "{short}"
     }
 }
