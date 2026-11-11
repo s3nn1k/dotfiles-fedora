@@ -7,7 +7,7 @@
         "sway/scratchpad"
     ],
     "modules-center": [
-        "sway/window"
+        "custom/window"
     ],
     "modules-right": [
         "idle_inhibitor",
@@ -141,5 +141,11 @@
         "format": "{text}",
         "tooltip-format": "{tooltip}",
         "return-type": "json"
+    },
+    "custom/window": {
+        "exec": "$HOME/.config/waybar/window-title.sh",
+        "exec-if": "swaymsg -t get_workspaces | jq -e 'length <= 5'",
+        "interval": 1,
+        "escape": true
     }
 }
