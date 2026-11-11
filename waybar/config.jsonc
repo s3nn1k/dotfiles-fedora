@@ -139,6 +139,7 @@
         "exec": "$HOME/.config/waybar/lang.sh",
         "interval": 1,
         "format": "{text}",
-        "tooltip-format": "{tooltip}"
+        "tooltip-format": "{tooltip}",
+        "return-type": "json"
     }
 }
