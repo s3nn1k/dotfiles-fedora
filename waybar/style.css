@@ -5,14 +5,14 @@
 }
 
 window#waybar {
-    background: #7c6f64;
+    background: #282828;
     color: #d4d4d4;
     border-bottom: 2px solid #7c6f64;
 }
 
 #workspaces button {
     padding: 0 10px;
-    background: #282828;
+    background: transparent;
     color: #bdae93;
     border: none;
     box-shadow: none;
@@ -20,7 +20,7 @@ window#waybar {
 }
 
 #workspaces button.focused {
-    background: #b8bb26;
+    background: #7c6f64;
     color: #282828;
 }
 
