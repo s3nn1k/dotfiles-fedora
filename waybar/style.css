@@ -74,3 +74,11 @@ window#waybar {
     color: #fabd2f;
     padding: 0 10px;
 }
+
+#custom-language {
+    padding: 0 10px;
+}
+
+#custom-language.lang-ru {
+    color: #fabd2f;
+}

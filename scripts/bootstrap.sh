@@ -409,7 +409,7 @@ main() {
     local name
     for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
         sway/background.conf swaylock/config foot/foot.ini rofi/config.rasi \
-        waybar/config.jsonc waybar/style.css dunst/dunstrc \
+        waybar/config.jsonc waybar/style.css waybar/lang.sh dunst/dunstrc \
         gtk-3.0/settings.ini gtk-4.0/settings.ini fontconfig/fonts.conf; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
     done

@@ -18,7 +18,7 @@
         "memory",
         "temperature",
         "backlight",
-        "sway/language",
+        "custom/language",
         "battery",
         "clock",
         "tray"
@@ -135,7 +135,10 @@
         },
         "on-click": "pavucontrol"
     },
-    "sway/language": {
-        "format": "{short}"
+    "custom/language": {
+        "exec": "$HOME/.config/waybar/lang.sh",
+        "interval": 1,
+        "format": "{text}",
+        "tooltip-format": "{tooltip}"
     }
 }
