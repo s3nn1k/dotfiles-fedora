@@ -13,12 +13,6 @@
 [credential "https://gist.github.com"]
     helper =
     helper = !gh auth git-credential
-[credential "https://gitlab.com"]
-    helper =
-    helper = !$HOME/.local/bin/git-cred-read
-[credential "https://gitlab.example.com"]
-    helper =
-    helper = !$HOME/.local/bin/git-cred-read
 [alias]
     # ветки
     br = branch
