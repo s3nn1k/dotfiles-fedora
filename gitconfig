@@ -20,8 +20,33 @@
     helper =
     helper = !$HOME/.local/bin/git-cred-read
 [alias]
+    # ветки
+    br = branch
+    sw = switch
+    swc = switch -c
+
+    # коммиты
+    c = commit
+    cm = commit -m
+    ca = commit --amend --no-edit
+    resof = reset --soft HEAD~1
+
+    # просмотр
+    st = status -sb
+    l = log --oneline -10
+    d = diff
+    ds = diff --stat
+    dc = diff --cached
+    dcs = diff --cached --stat
+    sh = show
+    shn = show --name-only
+
+    # синхронизация с origin
+    f = fetch --prune
+    pul = !git pull origin $(git rev-parse --abbrev-ref HEAD)
     pu = !git push -u origin $(git rev-parse --abbrev-ref HEAD)
     puf = !git push -u --force origin $(git rev-parse --abbrev-ref HEAD)
-    pul = !git pull origin $(git rev-parse --abbrev-ref HEAD)
-    co = checkout
-    br = branch
+    rom = !git rebase $(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
+
+    # самодокументация
+    aliases = !git config --get-regexp ^alias.
