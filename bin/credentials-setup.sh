@@ -22,7 +22,7 @@ SECURE_DIRECTORIES=(
 )
 SECURE_FILES=(
     "$REPOSITORY_ROOT"/git/*
-    "$REPOSITORY_ROOT/agents-credentials/git-credentials"
+    "$REPOSITORY_ROOT"/agents-credentials/*
     "$REPOSITORY_ROOT"/kube/*
     "$REPOSITORY_ROOT"/nkp/*.txt
     "$REPOSITORY_ROOT"/pi/*
