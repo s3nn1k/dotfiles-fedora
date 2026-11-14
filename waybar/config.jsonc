@@ -40,9 +40,10 @@
     "idle_inhibitor": {
         "format": "{icon}",
         "format-icons": {
-            "activated": "",
-            "deactivated": ""
-        }
+            "activated": "",
+            "deactivated": ""
+        },
+        "tooltip-format": "{status}"
     },
     "tray": {
         "spacing": 10
