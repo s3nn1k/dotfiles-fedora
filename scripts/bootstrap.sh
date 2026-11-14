@@ -330,6 +330,8 @@ install_mpd_mpris() {
 }
 
 install_gtk_theme() {
+    gsettings set org.gnome.desktop.interface gtk-theme Gruvbox-Material-Dark
+    gsettings set org.gnome.desktop.interface icon-theme Gruvbox-Material-Dark
     [[ -d "$HOME/.themes/Gruvbox-Material-Dark" ]] && return 0
     local archive="$CACHE/gruvbox-material-gtk.tar.gz"
     download https://github.com/TheGreatMcPain/gruvbox-material-gtk/archive/refs/heads/master.tar.gz \
