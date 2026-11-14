@@ -1,0 +1,26 @@
+levelbar block.filled,
+levelbar block.high,
+scale highlight,
+progressbar progress {
+    background-color: #b8bb26;
+}
+
+levelbar block.low {
+    background-color: #fabd2f;
+}
+
+levelbar block.full {
+    background-color: #fb4934;
+}
+
+levelbar block.empty,
+levelbar trough,
+scale trough,
+progressbar trough {
+    background-color: #3c3836;
+}
+
+scale slider {
+    background-color: #d4d4d4;
+    border: 1px solid #7c6f64;
+}
