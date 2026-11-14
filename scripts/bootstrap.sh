@@ -329,6 +329,20 @@ install_mpd_mpris() {
     systemctl --user enable --now mpd-mpris.service
 }
 
+install_sddm_theme() {
+    sudo rm -rf /usr/share/sddm/themes/gruvbox
+    sudo install -d -m 755 /usr/share/sddm/themes/gruvbox
+    sudo install -m 644 \
+        sddm/theme/main.qml \
+        sddm/theme/metadata.desktop \
+        sddm/theme/theme.conf \
+        /usr/share/sddm/themes/gruvbox/
+    sudo install -m 644 "$HOME/.local/share/fonts/Hack/HackNerdFont-Regular.ttf" /usr/share/sddm/themes/gruvbox/
+    sudo install -m 644 wallpapers/pepe-in-the-rain.jpg /usr/share/sddm/themes/gruvbox/background.jpg
+    sudo install -d -m 755 /etc/sddm.conf.d
+    sudo install -m 644 sddm/99-gruvbox.conf /etc/sddm.conf.d/99-gruvbox.conf
+}
+
 install_gtk_theme() {
     gsettings set org.gnome.desktop.interface gtk-theme Gruvbox-Material-Dark
     gsettings set org.gnome.desktop.interface icon-theme Gruvbox-Material-Dark
@@ -486,6 +500,7 @@ main() {
     systemctl --user enable --now ssh-agent.service
     install_mpd_mpris
     install_gtk_theme
+    install_sddm_theme
 
     sudo dnf install -y mpd mpc
     install_rmpc

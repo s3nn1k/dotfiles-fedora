@@ -1,0 +1,10 @@
+[SddmGreeterTheme]
+Name=gruvbox
+Description=Gruvbox login card over dimmed pepe wallpaper
+Type=sddm-theme
+Version=1.0
+MainScript=main.qml
+ConfigFile=theme.conf
+Theme-Id=gruvbox
+Theme-API=2.0
+QtVersion=6
