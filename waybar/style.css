@@ -95,14 +95,6 @@ window#waybar {
     padding: 0 5px;
 }
 
-#custom-bluetooth {
-    padding: 0 5px;
-}
-
-#custom-bluetooth.off {
-    color: #bdae93;
-}
-
 #custom-mihomo {
     padding: 0 5px;
 }

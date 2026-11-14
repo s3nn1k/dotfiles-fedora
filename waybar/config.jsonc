@@ -12,7 +12,6 @@
     "modules-right": [
         "idle_inhibitor",
         "pulseaudio",
-        "custom/bluetooth",
         "network",
         "custom/mihomo",
         "cpu",
@@ -22,7 +21,8 @@
         "power-profiles-daemon",
         "battery",
         "clock",
-        "custom/language"
+        "custom/language",
+        "tray"
     ],
     "sway/mode": {
         "format": "<span style=\"italic\">{}</span>"
@@ -109,9 +109,7 @@
         "format-ethernet": "",
         "tooltip-format": "{ifname}: {ipaddr}",
         "format-linked": "{ifname} (No IP) ",
-        "format-disconnected": "Disconnected ⚠",
-        "on-click": "nm-connection-editor",
-        "on-click-right": "nmcli radio wifi toggle"
+        "format-disconnected": "Disconnected ⚠"
     },
     "pulseaudio": {
         "format": "{icon} {volume}% {format_source}",
@@ -145,11 +143,7 @@
         "format": "{text}",
         "on-click": "librewolf http://127.0.0.1:9090/ui"
     },
-    "custom/bluetooth": {
-        "exec": "$HOME/.config/waybar/bluetooth-status.sh",
-        "interval": 5,
-        "return-type": "json",
-        "format": "{text}",
-        "on-click": "blueman-manager"
+    "tray": {
+        "spacing": 10
     }
 }
