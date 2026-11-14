@@ -13,7 +13,7 @@
             "<Space>": TogglePause,
             "<C-n>": NextTrack,
             "<C-p>": PreviousTrack,
-            "<": SeekBackward,
+            "<": SeekBack,
             ">": SeekForward,
             "R": ToggleRepeat,
             "C": ToggleConsume,
