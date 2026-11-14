@@ -22,8 +22,7 @@
         "power-profiles-daemon",
         "battery",
         "clock",
-        "custom/language",
-        "tray"
+        "custom/language"
     ],
     "sway/mode": {
         "format": "<span style=\"italic\">{}</span>"
@@ -110,7 +109,8 @@
         "format-ethernet": "",
         "tooltip-format": "{ifname}: {ipaddr}",
         "format-linked": "{ifname} (No IP) ",
-        "format-disconnected": "Disconnected ⚠"
+        "format-disconnected": "Disconnected ⚠",
+        "on-click": "nm-connection-editor"
     },
     "pulseaudio": {
         "format": "{icon} {volume}% {format_source}",
@@ -150,8 +150,5 @@
         "return-type": "json",
         "format": "{text}",
         "on-click": "blueman-manager"
-    },
-    "tray": {
-        "spacing": 10
     }
 }
