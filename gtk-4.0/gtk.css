@@ -1,8 +1,16 @@
+@define-color accent_color #83a598;
+@define-color accent_bg_color #83a598;
+@define-color accent_fg_color #282828;
+
 levelbar block.filled,
 levelbar block.high,
 scale highlight,
+scale fill,
 progressbar progress {
     background-color: #b8bb26;
+    border: none;
+    box-shadow: none;
+    background-image: none;
 }
 
 levelbar block.low {
@@ -18,9 +26,47 @@ levelbar trough,
 scale trough,
 progressbar trough {
     background-color: #3c3836;
+    box-shadow: none;
+    background-image: none;
 }
 
 scale slider {
     background-color: #d4d4d4;
     border: 1px solid #7c6f64;
+}
+
+scale,
+scale trough,
+scale highlight,
+scale slider {
+    outline-style: none;
+}
+
+notebook header tabs tab:checked {
+    background-color: #3c3836;
+    color: #d4d4d4;
+    border-bottom: 3px solid #b8bb26;
+    box-shadow: none;
+    background-image: none;
+}
+
+* {
+    outline-style: none;
+}
+
+separator {
+    background-color: #3c3836;
+}
+
+scrollbar {
+    background-color: #282828;
+}
+
+scrollbar slider {
+    background-color: #7c6f64;
+}
+
+stackswitcher button:checked {
+    background-color: #3c3836;
+    color: #d4d4d4;
 }
