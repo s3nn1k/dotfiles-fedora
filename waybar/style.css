@@ -51,7 +51,6 @@ window#waybar {
 #tray,
 #idle_inhibitor,
 #pulseaudio,
-#network,
 #power-profiles-daemon,
 #cpu,
 #memory,
@@ -64,14 +63,6 @@ window#waybar {
 
 #pulseaudio {
     color: #83a598;
-}
-
-#network {
-    color: #8ec07c;
-}
-
-#network.disconnected {
-    color: #fb4934;
 }
 
 #battery {

@@ -12,7 +12,6 @@
     "modules-right": [
         "idle_inhibitor",
         "pulseaudio",
-        "network",
         "custom/mihomo",
         "cpu",
         "memory",
@@ -103,13 +102,6 @@
             "balanced": "",
             "power-saver": ""
         }
-    },
-    "network": {
-        "format-wifi": "{essid} ({signalStrength}%) ",
-        "format-ethernet": "",
-        "tooltip-format": "{ifname}: {ipaddr}",
-        "format-linked": "{ifname} (No IP) ",
-        "format-disconnected": "Disconnected ⚠"
     },
     "pulseaudio": {
         "format": "{icon} {volume}% {format_source}",
