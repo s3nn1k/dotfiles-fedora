@@ -2,6 +2,7 @@
     font-family: "Hack Nerd Font Propo", "Font Awesome 6 Free", "Font Awesome 6 Brands", "Noto Color Emoji", sans-serif;
     font-size: 14px;
     min-height: 0;
+    min-width: 0;
 }
 
 #tooltip,
