@@ -110,7 +110,7 @@
         "tooltip-format": "{ifname}: {ipaddr}",
         "format-linked": "{ifname} (No IP) ",
         "format-disconnected": "Disconnected ⚠",
-        "on-click": "$HOME/.config/waybar/networkmenu.sh"
+        "on-click": "$HOME/.local/bin/networkmanager_dmenu"
     },
     "pulseaudio": {
         "format": "{icon} {volume}% {format_source}",
