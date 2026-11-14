@@ -4,7 +4,8 @@
     min-height: 0;
 }
 
-#tooltip {
+#tooltip,
+tooltip {
     background: #282828;
     color: #d4d4d4;
     border: 2px solid #7c6f64;
@@ -105,6 +106,3 @@ window#waybar {
     color: #fb4934;
 }
 
-#custom-language.lang-ru {
-    color: #fabd2f;
-}

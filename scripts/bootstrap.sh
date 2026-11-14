@@ -329,6 +329,21 @@ install_mpd_mpris() {
     systemctl --user enable --now mpd-mpris.service
 }
 
+install_gtk_theme() {
+    [[ -d "$HOME/.themes/Gruvbox-Material-Dark" ]] && return 0
+    local archive="$CACHE/gruvbox-material-gtk.tar.gz"
+    download https://github.com/TheGreatMcPain/gruvbox-material-gtk/archive/refs/heads/master.tar.gz \
+        073ad0b27396b9d68663f5bf8df10b32603523a47a19bb5ebed2519cf9ae14d1 "$archive"
+    tar -xzf "$archive" -C "$CACHE" \
+        gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark \
+        gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark-HIDPI \
+        gruvbox-material-gtk-master/icons/Gruvbox-Material-Dark
+    mkdir -p "$HOME/.themes" "$HOME/.icons"
+    cp -r "$CACHE/gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark" "$HOME/.themes/"
+    cp -r "$CACHE/gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark-HIDPI" "$HOME/.themes/"
+    cp -r "$CACHE/gruvbox-material-gtk-master/icons/Gruvbox-Material-Dark" "$HOME/.icons/"
+}
+
 install_nm_dmenu() {
     if [[ ! -x "$LOCAL_BIN/networkmanager_dmenu" ]]; then
         download https://raw.githubusercontent.com/firecat53/networkmanager-dmenu/v2.7.2/networkmanager_dmenu \
@@ -468,6 +483,7 @@ main() {
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service
     install_mpd_mpris
+    install_gtk_theme
     install_nm_dmenu
 
     sudo dnf install -y mpd mpc
