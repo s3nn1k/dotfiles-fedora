@@ -10,16 +10,16 @@
         "sway/window"
     ],
     "modules-right": [
-        "idle_inhibitor",
         "pulseaudio",
-        "custom/mihomo",
         "cpu",
         "memory",
         "temperature",
         "backlight",
+        "idle_inhibitor",
         "power-profiles-daemon",
         "battery",
         "clock",
+        "custom/mihomo",
         "custom/language",
         "tray"
     ],
