@@ -342,6 +342,16 @@ install_gtk_theme() {
     cp -r "$CACHE/gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark" "$HOME/.themes/"
     cp -r "$CACHE/gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark-HIDPI" "$HOME/.themes/"
     cp -r "$CACHE/gruvbox-material-gtk-master/icons/Gruvbox-Material-Dark" "$HOME/.icons/"
+    local theme_css theme_hex replacement_hex
+    for theme_css in "$HOME/.themes/Gruvbox-Material-Dark"*/gtk-{3,4}.0/gtk.css; do
+        sed -i \
+            -e 's/#d4be98/#d4d4d4/g' \
+            -e 's/#ddc7a1/#bdae93/g' \
+            -e 's/#ea6962/#fb4934/g' \
+            -e 's/#a9b665/#b8bb26/g' \
+            -e 's/#d8a657/#fabd2f/g' \
+            "$theme_css"
+    done
 }
 
 install_nm_dmenu() {
