@@ -1,5 +1,5 @@
 {
-    "height": 36,
+    "height": 32,
     "spacing": 2,
     "modules-left": [
         "sway/workspaces",
@@ -116,12 +116,8 @@
         "format-alt": "{ifname}: {ipaddr}/{cidr}"
     },
     "pulseaudio": {
-        "format": "{volume}% {icon} {format_source}",
-        "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
-        "format-source": "{volume}% ",
-        "format-source-muted": "",
+        "format": "{icon} {volume}%",
+        "format-muted": "",
         "format-icons": {
             "headphone": "",
             "hands-free": "",

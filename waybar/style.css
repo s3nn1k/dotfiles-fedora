@@ -4,6 +4,13 @@
     min-height: 0;
 }
 
+#tooltip {
+    background: #282828;
+    color: #d4d4d4;
+    border: 2px solid #7c6f64;
+    padding: 6px 10px;
+}
+
 window#waybar {
     background: #282828;
     color: #d4d4d4;
