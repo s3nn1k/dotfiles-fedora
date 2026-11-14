@@ -110,7 +110,7 @@
         "tooltip-format": "{ifname}: {ipaddr}",
         "format-linked": "{ifname} (No IP) ",
         "format-disconnected": "Disconnected ⚠",
-        "on-click": "foot -a nmtui nmtui connect",
+        "on-click": "nm-connection-editor",
         "on-click-right": "nmcli radio wifi toggle"
     },
     "pulseaudio": {
