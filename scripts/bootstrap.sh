@@ -316,6 +316,19 @@ install_librewolf_policies() {
     rm -f "$merged"
 }
 
+install_mpd_mpris() {
+    local archive="$CACHE/mpd-mpris_0.4.4_linux_amd64.tar.gz"
+    if [[ ! -x "$LOCAL_BIN/mpd-mpris" ]]; then
+        download https://github.com/natsukagami/mpd-mpris/releases/download/v0.4.4/mpd-mpris_0.4.4_linux_amd64.tar.gz \
+            33f0a3322267f23ea5ac4ee9b5248894e0ad52410e0c2b3c9302effbcb3c5d57 "$archive"
+        tar -xzf "$archive" -C "$CACHE" mpd-mpris
+        install -m 755 "$CACHE/mpd-mpris" "$LOCAL_BIN/mpd-mpris"
+    fi
+    link_config "$REPOSITORY/systemd/user/mpd-mpris.service" "$CONFIGURATION_HOME/systemd/user/mpd-mpris.service"
+    systemctl --user daemon-reload
+    systemctl --user enable --now mpd-mpris.service
+}
+
 install_librewolf_autoconfig() {
     local config_home="$HOME/projects/personal/librewolf-config"
 
@@ -443,6 +456,7 @@ main() {
     link_config "$REPOSITORY/systemd/user/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service
+    install_mpd_mpris
 
     sudo dnf install -y mpd mpc
     install_rmpc

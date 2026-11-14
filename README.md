@@ -34,8 +34,8 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 - `sway/`, `foot/`, `swaylock/`, `rofi/`, `waybar/`, `dunst/`, `gtk-3.0/`, `gtk-4.0/`,
   `zshrc`, `zprofile`, `gitconfig`, `wallpapers/` - конфиги, которые bootstrap
   раскладывает симлинками.
-- `systemd/` - user-юнит ssh-agent и drop-in'ы logind и sleep (последние ставятся копиями
-  в /etc).
+- `systemd/` - user-юниты ssh-agent и mpd-mpris (мост MPRIS для медиа-клавиш) и drop-in'ы
+  logind и sleep (последние ставятся копиями в /etc).
 - `mihomo/` - шаблон конфига VPN; браузер LibreWolf - репо librewolf-config (клонируется в ~/projects/personal, оттуда темы, политики и хоткеи ядра).
 - `scripts/bootstrap.sh` - установка машины с нуля: пакеты, конфиги, hardening, VPN
   mihomo, gh, личные репозитории.
