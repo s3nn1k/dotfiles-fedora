@@ -13,6 +13,7 @@
         "idle_inhibitor",
         "pulseaudio",
         "network",
+        "custom/mihomo",
         "power-profiles-daemon",
         "cpu",
         "memory",
@@ -140,5 +141,12 @@
         "format": "{text}",
         "tooltip-format": "{tooltip}",
         "return-type": "json"
+    },
+    "custom/mihomo": {
+        "exec": "$HOME/.config/waybar/mihomo-status.sh",
+        "interval": 5,
+        "return-type": "json",
+        "format": "{text}",
+        "tooltip-format": "{tooltip}"
     }
 }
