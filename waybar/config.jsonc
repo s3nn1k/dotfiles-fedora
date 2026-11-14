@@ -19,8 +19,8 @@
         "power-profiles-daemon",
         "battery",
         "clock",
-        "custom/mihomo",
         "custom/language",
+        "custom/mihomo",
         "tray"
     ],
     "sway/mode": {
