@@ -1,5 +1,5 @@
 {
-    "height": 32,
+    "height": 28,
     "spacing": 2,
     "modules-left": [
         "sway/workspaces",
@@ -142,6 +142,7 @@
         "exec": "$HOME/.config/waybar/mihomo-status.sh",
         "interval": 5,
         "return-type": "json",
-        "format": "{text}"
+        "format": "{text}",
+        "on-click": "librewolf http://127.0.0.1:9090/ui"
     }
 }
