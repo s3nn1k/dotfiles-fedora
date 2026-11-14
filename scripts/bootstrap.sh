@@ -356,17 +356,6 @@ install_gtk_theme() {
     done
 }
 
-install_nm_dmenu() {
-    if [[ ! -x "$LOCAL_BIN/networkmanager_dmenu" ]]; then
-        download https://raw.githubusercontent.com/firecat53/networkmanager-dmenu/v2.7.2/networkmanager_dmenu \
-            12d1daa90677b7e3054ac36fb39def51d2a7b7befe64b58d8cf1a4d2c81e259b5 "$LOCAL_BIN/networkmanager_dmenu"
-        chmod +x "$LOCAL_BIN/networkmanager_dmenu"
-    fi
-    mkdir -p "$CONFIGURATION_HOME/networkmanager-dmenu"
-    link_config "$REPOSITORY/networkmanager-dmenu/config.ini" \
-        "$CONFIGURATION_HOME/networkmanager-dmenu/config.ini"
-}
-
 install_librewolf_autoconfig() {
     local config_home="$HOME/projects/personal/librewolf-config"
 
@@ -497,7 +486,6 @@ main() {
     systemctl --user enable --now ssh-agent.service
     install_mpd_mpris
     install_gtk_theme
-    install_nm_dmenu
 
     sudo dnf install -y mpd mpc
     install_rmpc
