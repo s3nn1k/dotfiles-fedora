@@ -59,7 +59,7 @@ block_packages() {
             ;;
         apps)
             printf '%s\n' firefox firefox-langpacks tmux mpv nwg-wrapper \
-                fprintd fprintd-pam \
+                fprintd fprintd-pam network-manager-applet \
                 NetworkManager-openvpn-gnome NetworkManager-libreswan-gnome \
                 NetworkManager-openconnect-gnome NetworkManager-vpnc-gnome \
                 NetworkManager-sstp-gnome NetworkManager-l2tp-gnome
