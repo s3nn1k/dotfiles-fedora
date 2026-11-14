@@ -29,6 +29,8 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
   swayidle-laptop (idle-контур Sway), wt (транскрибация ffmpeg + whisper.cpp).
 - `herdr/config.toml` - конфиг herdr; bootstrap линкует в `~/.config/herdr/config.toml`.
 - `psqlrc` - UX-конфиг psql; линкуется в `~/.psqlrc`.
+- `mpd/mpd.conf`, `rmpc/config.ron` - плеер mpd + TUI-клиент rmpc (COPR skoved/rmpc);
+  медиа-клавиши (mpc, wpctl) в `sway/desktop.conf`.
 - `sway/`, `foot/`, `swaylock/`, `rofi/`, `waybar/`, `dunst/`, `gtk-3.0/`, `gtk-4.0/`,
   `zshrc`, `zprofile`, `gitconfig`, `wallpapers/` - конфиги, которые bootstrap
   раскладывает симлинками.

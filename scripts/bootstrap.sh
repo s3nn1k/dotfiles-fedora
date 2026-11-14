@@ -410,7 +410,8 @@ main() {
     for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
         sway/background.conf swaylock/config foot/foot.ini rofi/config.rasi \
         waybar/config.jsonc waybar/style.css waybar/lang.sh dunst/dunstrc \
-        gtk-3.0/settings.ini gtk-4.0/settings.ini fontconfig/fonts.conf; do
+        gtk-3.0/settings.ini gtk-4.0/settings.ini fontconfig/fonts.conf \
+        mpd/mpd.conf rmpc/config.ron; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
     done
     link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
@@ -433,6 +434,11 @@ main() {
     link_config "$REPOSITORY/systemd/user/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service
+
+    sudo dnf -y copr enable skoved/rmpc
+    sudo dnf install -y mpd rmpc mpc
+    mkdir -p "$HOME/Music" "$HOME/.local/share/mpd/playlists"
+    systemctl --user enable --now mpd.service
 
     install_mihomo
     install_metacubexd
