@@ -215,6 +215,15 @@ install_whisper() {
         1fc70f774d38eb169993ac391eea357ef47c88757ef72ee5943879b7e8e2bc69 "$model"
 }
 
+install_rmpc() {
+    download https://github.com/mierak/rmpc/releases/download/v0.11.0/rmpc-v0.11.0-x86_64-unknown-linux-gnu.tar.gz \
+        b03d4b777cf0afe61107abb4ee847b7c6539b8f5c76555fd759cd15a6c1ff604 "$CACHE/rmpc.tar.gz"
+    rm -rf "$CACHE/rmpc-extract"
+    mkdir -p "$CACHE/rmpc-extract"
+    tar -xzf "$CACHE/rmpc.tar.gz" -C "$CACHE/rmpc-extract"
+    install -m 755 "$CACHE/rmpc-extract/rmpc" "$LOCAL_BIN/rmpc"
+}
+
 install_herdr() {
     download https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64 \
         14d9e8bc8b4a9e0118d77c32266f76d461f09b40342eb23752960bd89f59929d "$CACHE/herdr"
@@ -435,8 +444,8 @@ main() {
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service
 
-    sudo dnf -y copr enable skoved/rmpc
-    sudo dnf install -y mpd rmpc mpc
+    sudo dnf install -y mpd mpc
+    install_rmpc
     mkdir -p "$HOME/Music" "$HOME/.local/share/mpd/playlists"
     systemctl --user enable --now mpd.service
 
