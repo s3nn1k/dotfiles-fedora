@@ -469,7 +469,8 @@ main() {
     local name
     for name in sway/config sway/config.d/90-swayidle.conf sway/desktop.conf sway/output.conf \
         sway/background.conf swaylock/config foot/foot.ini rofi/config.rasi \
-        waybar/config.jsonc waybar/style.css waybar/lang.sh waybar/mihomo-status.sh dunst/dunstrc \
+        waybar/config.jsonc waybar/style.css waybar/lang.sh waybar/mihomo-status.sh \
+        waybar/bluetooth-status.sh autostart/blueman.desktop dunst/dunstrc \
         gtk-3.0/settings.ini gtk-3.0/gtk.css gtk-4.0/settings.ini gtk-4.0/gtk.css fontconfig/fonts.conf \
         mpd/mpd.conf rmpc/config.ron; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
