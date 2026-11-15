@@ -26,7 +26,6 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 - `scripts/unlock-gitcrypt.sh` - разблокировка git-crypt в `~/credentials` и
   `~/vaults/{personal,work}` по ключам, canary-проверка, раскладка credentials, шаг
   mihomo.
-- `scripts/cleanup.sh`, `scripts/hardening.sh` - обёртки над шагами cleanup и hardening.
 - `scripts/librewolf/profiles.sh` - перенос закладок LibreWolf между машинами.
 - `git-crypt/repo.sh` - хелпер git-crypt-репозитория; ставится как git-crypt-repo
   (init/unlock/lock/status/key-show), git-crypt-textconv и pre-commit-hook.
