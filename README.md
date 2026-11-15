@@ -12,7 +12,7 @@ Fedora сохраняется.
 sudo dnf install -y git
 git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ~/dotfiles-fedora/scripts/bootstrap.sh
-~/dotfiles-fedora/scripts/cleanup.sh
+~/dotfiles-fedora/scripts/bootstrap.sh cleanup
 ```
 
 Точечный шаг: `~/dotfiles-fedora/scripts/bootstrap.sh <шаг>`; список шагов - `--list`.

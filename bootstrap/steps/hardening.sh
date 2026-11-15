@@ -10,7 +10,6 @@ install_root_file_if_changed() {
 
 apply_sysctl() {
     if install_root_file_if_changed "/etc/sysctl.d/99-hardening.conf" <<'EOF'
-# Sysctl security-hardening; применяется scripts/hardening.sh
 # Network
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
