@@ -1,5 +1,5 @@
 run_configs() {
-    install_command "$REPOSITORY/sway/swayidle-laptop.py" swayidle-laptop
+    install_command "$REPOSITORY/swayidle/swayidle-laptop.py" swayidle-laptop
 
     local output
     output="$(swaymsg -r -t get_outputs | jq -re '
