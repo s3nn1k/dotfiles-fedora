@@ -14,7 +14,7 @@ install_metacubexd() {
 }
 
 mihomo_die() {
-    echo "mihomo-apply: $1" >&2
+    echo "mihomo: $1" >&2
     exit 1
 }
 

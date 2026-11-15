@@ -46,8 +46,6 @@ install_librewolf_chrome() {
     profiles="$(find_librewolf_profiles)"
     [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
 
-    # Каталог целиком: css темы, keymap.uc.js, keymap.json и вендор fx-autoconfig.
-    # link_config файловый, поэтому симлинк каталога проверяем сами.
     local resolved
     resolved="$(readlink -f "$source")"
     while IFS= read -r profile; do
