@@ -82,7 +82,7 @@ rename_pane = ""
 split_horizontal = ""
 
 # ws по позиции сайдбара: q..p -> фокус, shift+q..p -> перенос панели
-# (скрипт bin/herdr-ws.sh)
+# (скрипт herdr/bin/herdr-ws.sh)
 [[keys.command]]
 key = "prefix+q"
 type = "shell"
@@ -230,7 +230,7 @@ key = "prefix+shift+9"
 type = "shell"
 command = "herdr-ws move-tab 9"
 
-# переименование агента панели: prefix+m (скрипт bin/herdr-agent-rename)
+# переименование агента панели: prefix+m (скрипт herdr/bin/herdr-agent-rename.sh)
 [[keys.command]]
 key = "prefix+m"
 type = "popup"
