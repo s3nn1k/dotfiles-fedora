@@ -69,7 +69,7 @@ is_git_crypt_locked() {
 
 require_credentials_unlocked() {
     if is_git_crypt_locked "$1"; then
-        fail "credentials заперт: запусти scripts/setup-secrets.sh unlock"
+        fail "credentials заперт: запусти scripts/unlock-gitcrypt.sh"
     fi
 }
 

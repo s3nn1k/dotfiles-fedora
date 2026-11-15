@@ -1,4 +1,6 @@
-run_desktop-links() {
+run_configs() {
+    install_command "$REPOSITORY/sway/swayidle-laptop.py" swayidle-laptop
+
     local output
     output="$(swaymsg -r -t get_outputs | jq -re '
         [.[] | select(.active == true and (.name | test("^eDP-[0-9]+$"))) | .name]

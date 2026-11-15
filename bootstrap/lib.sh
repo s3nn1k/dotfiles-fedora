@@ -53,22 +53,6 @@ download() {
     mv "$destination.part" "$destination"
 }
 
-download_model() {
-    local url="$1" checksum="$2" destination="$3"
-    if [[ -f "$destination" ]] && checksum_matches "$checksum" "$destination"; then
-        return
-    fi
-    if [[ -f "$destination.part" ]] && checksum_matches "$checksum" "$destination.part"; then
-        mv "$destination.part" "$destination"
-        return
-    fi
-    retry "загрузка модели не удалась" "$url" curl --fail --http1.1 --location --show-error \
-        --continue-at - --connect-timeout 15 --max-time 1800 \
-        --proto '=https' --tlsv1.2 --output "$destination.part" "$url"
-    verify_checksum "$checksum" "$destination.part"
-    mv "$destination.part" "$destination"
-}
-
 link_config() {
     local source="$1" destination="$2" resolved_source resolved_destination
     [[ -f "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
@@ -94,6 +78,34 @@ link_config() {
     fi
     mkdir -p "$(dirname "$destination")"
     ln -s "$resolved_source" "$destination"
+}
+
+validate_link_destination() {
+    local source="$1" destination="$2"
+    if [[ -L "$destination" ]]; then
+        if [[ "$(readlink "$destination")" != "$source" ]]; then
+            echo "bootstrap: refusing to replace existing symlink: $destination" >&2
+            return 1
+        fi
+    elif [[ -e "$destination" ]]; then
+        echo "bootstrap: refusing to replace existing path: $destination" >&2
+        return 1
+    fi
+}
+
+link_safely() {
+    local source="$1" destination="$2"
+    validate_link_destination "$source" "$destination" || return 1
+    mkdir -p "$(dirname "$destination")"
+    [[ -L "$destination" ]] || {
+        ln -s "$source" "$destination"
+        echo "linked: $destination -> $source"
+    }
+}
+
+is_git_crypt_locked() {
+    [[ -f "$1" ]] || return 1
+    printf '\000GITCRYPT' | cmp -s - <(head -c 9 "$1")
 }
 
 install_command() {

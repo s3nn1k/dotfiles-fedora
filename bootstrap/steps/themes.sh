@@ -39,7 +39,7 @@ install_sddm_theme() {
     sudo install -m 644 sddm/99-gruvbox.conf /etc/sddm.conf.d/99-gruvbox.conf
 }
 
-run_desktop-themes() {
+run_themes() {
     download https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/Hack.zip \
         fa24da7de7cefe7766614d27762570b20453c852fc1d5b657111666df9a5e449 "$CACHE/Hack.zip"
     mkdir -p "$HOME/.local/share/fonts/Hack"

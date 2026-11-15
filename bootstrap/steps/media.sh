@@ -20,30 +20,6 @@ install_rmpc() {
     install -m 755 "$CACHE/rmpc-extract/rmpc" "$LOCAL_BIN/rmpc"
 }
 
-install_whisper() {
-    local model="$HOME/.local/share/whisper/models/ggml-large-v3-turbo.bin"
-    local source_directory="$CACHE/whisper.cpp-1.9.5" version_file="$LOCAL_BIN/whisper-cli.version"
-    local installed_version=""
-
-    download https://github.com/ggml-org/whisper.cpp/archive/refs/tags/v1.9.5.tar.gz \
-        ff1a9053feb509ff9d7729703355541ae9690073a6b1c40eb692c962e0dc1720 \
-        "$CACHE/whisper.cpp-v1.9.5.tar.gz"
-
-    [[ -f "$version_file" ]] && installed_version="$(cat "$version_file")"
-    if [[ ! -x "$LOCAL_BIN/whisper-cli" || "$installed_version" != "v1.9.5" ]]; then
-        rm -rf "$source_directory"
-        tar -xzf "$CACHE/whisper.cpp-v1.9.5.tar.gz" -C "$CACHE"
-        cmake -S "$source_directory" -B "$source_directory/build" -DBUILD_SHARED_LIBS=OFF
-        cmake --build "$source_directory/build" --config Release -j"$(nproc)"
-        install -m 755 "$source_directory/build/bin/whisper-cli" "$LOCAL_BIN/whisper-cli"
-        printf 'v1.9.5\n' > "$version_file"
-    fi
-
-    mkdir -p "$(dirname "$model")"
-    download_model https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin \
-        1fc70f774d38eb169993ac391eea357ef47c88757ef72ee5943879b7e8e2bc69 "$model"
-}
-
 run_media() {
     install_mpd_mpris
 
@@ -52,6 +28,5 @@ run_media() {
     mkdir -p "$HOME/Music" "$HOME/.local/share/mpd/playlists"
     systemctl --user enable --now mpd.service
 
-    sudo dnf install -y cmake ffmpeg-free yt-dlp
-    install_whisper
+    sudo dnf install -y ffmpeg-free yt-dlp
 }

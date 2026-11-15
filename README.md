@@ -15,36 +15,32 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ~/dotfiles-fedora/scripts/cleanup.sh
 ```
 
-После ручной работы с ключом в nkp:
-
-```bash
-~/dotfiles-fedora/scripts/setup-secrets.sh unlock
-```
+Точечный шаг: `~/dotfiles-fedora/scripts/bootstrap.sh <шаг>`; список шагов - `--list`.
+Секреты: `nkp unlock main`, затем `~/dotfiles-fedora/scripts/unlock-gitcrypt.sh` - три
+ключа, после них раскладка секретов, подписка mihomo и права применяются сами.
 
 ## Структура
 
-- `bin/` - команды в `~/.local/bin` от bootstrap: credentials-setup (линки и права
-  `~/credentials`), git-crypt-repo (unlock/lock git-crypt-репозиториев), git-cred-read
-  (git credential helper), herdr-ws и herdr-agent-rename (панели и агенты herdr),
-  swayidle-laptop (idle-контур Sway), wt (транскрибация ffmpeg + whisper.cpp).
-- `herdr/config.toml` - конфиг herdr; bootstrap линкует в `~/.config/herdr/config.toml`.
-- `psqlrc` - UX-конфиг psql; линкуется в `~/.psqlrc`.
-- `mpd/mpd.conf`, `rmpc/config.ron` - плеер mpd + TUI-клиент rmpc (COPR skoved/rmpc);
-  медиа-клавиши (mpc, wpctl) в `sway/desktop.conf`.
-- `sway/`, `foot/`, `swaylock/`, `rofi/`, `waybar/`, `dunst/`, `gtk-3.0/`, `gtk-4.0/`,
-  `zshrc`, `zprofile`, `gitconfig`, `wallpapers/` - конфиги, которые bootstrap
-  раскладывает симлинками.
+- `bootstrap/` - `lib.sh` (хелперы: симлинки, загрузки по checksum, клоны, git-crypt) и
+  `steps/` (19 шагов); порядок задаёт STEP_ORDER в диспетчере `scripts/bootstrap.sh`.
+- `scripts/unlock-gitcrypt.sh` - разблокировка git-crypt в `~/credentials` и
+  `~/vaults/{personal,work}` по ключам, canary-проверка, раскладка credentials, шаг
+  mihomo.
+- `scripts/cleanup.sh`, `scripts/hardening.sh` - обёртки над шагами cleanup и hardening.
+- `scripts/mihomo-apply.sh` - рендер конфига mihomo из подписки и systemd-служба.
+- `scripts/librewolf/profiles.sh` - перенос закладок LibreWolf между машинами.
+- `git-crypt/repo.sh` - хелпер git-crypt-репозитория; ставится как git-crypt-repo
+  (init/unlock/lock/status/key-show), git-crypt-textconv и pre-commit-hook.
+- `herdr/` - конфиг herdr и `bin/` панели (herdr-ws, herdr-agent-rename).
+- `sway/` - конфиги Sway и `swayidle-laptop.py`; `foot/`, `swaylock/`, `rofi/`, `waybar/`,
+  `dunst/`, `gtk-3.0/`, `gtk-4.0/`, `fontconfig/` - остальной рабочий стол, всё
+  раскладывается симлинками.
+- `sddm/` - тема greeter; `omp/` - промпт oh-my-posh; `wallpapers/` - обои.
+- `mihomo/` - шаблон конфига VPN; браузер LibreWolf - репо librewolf-config.
+- `mpd/mpd.conf`, `rmpc/config.ron`, `herdr/config.toml`, `psqlrc`, `zshrc`, `zprofile`,
+  `gitconfig` - конфиги, линкуются в дом; медиа-клавиши (mpc, wpctl) в
+  `sway/desktop.conf`.
 - `systemd/` - user-юниты ssh-agent и mpd-mpris (мост MPRIS для медиа-клавиш) и drop-in'ы
   logind и sleep (последние ставятся копиями в /etc).
-- `mihomo/` - шаблон конфига VPN; браузер LibreWolf - репо librewolf-config (клонируется в ~/projects/personal, оттуда темы, политики и хоткеи ядра).
-- `scripts/bootstrap.sh` - установка машины с нуля: пакеты, конфиги, hardening, VPN
-  mihomo, gh, личные репозитории.
-- `scripts/cleanup.sh` - срез балласта Fedora Sway Spin и миграция на Node.js 24
-  (`--dry-run`).
-- `scripts/hardening.sh` - sysctl, LLMNR off, avahi mask, firewall, PAM, auditd,
-  автообновления безопасности.
-- `scripts/mihomo-apply.sh` - рендер конфига mihomo из подписки и systemd-служба.
-- `scripts/setup-secrets.sh` - unlock и линк git-crypt-секретов (postgres, librewolf).
-- `scripts/librewolf/profiles.sh` - перенос закладок LibreWolf между машинами.
 - Раскладка и клавиши - репо keyd-cfqv8 (https://github.com/s3nn1k/keyd-cfqv8); xremap
   здесь не настраивается.

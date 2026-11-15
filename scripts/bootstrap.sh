@@ -2,7 +2,7 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../bootstrap/lib.sh"
 
-STEP_ORDER=(packages hardening desktop-links desktop-themes mihomo media docker cli-tools work librewolf cleanup)
+STEP_ORDER=(base mihomo hardening keyboard git nkp configs themes shell credentials obsidian projects neovim pi-agent herdr media docker librewolf cleanup)
 
 for step_file in "$(dirname "${BASH_SOURCE[0]}")"/../bootstrap/steps/*.sh; do
     source "$step_file"
@@ -47,9 +47,9 @@ main() {
         return 0
     fi
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh и группы docker." \
-        "Дальше: открой nkp, достань ключи и запусти scripts/setup-secrets.sh unlock." \
+        "Секреты: nkp unlock main, затем scripts/unlock-gitcrypt.sh (3 ключа) - раскладка, mihomo и права сами." \
         "LibreWolf-профили: после unlock запусти scripts/librewolf/profiles.sh reset, затем init (регистрация) и pull (закладки из ~/credentials/librewolf, профили появятся в панели LibreWolf)." \
-        "VPN: смена подписки - ~/.config/mihomo/subscription-url + scripts/mihomo-apply.sh, панель http://127.0.0.1:9090/ui."
+        "VPN: смена подписки - ~/credentials/mihomo/subscription-url + scripts/bootstrap.sh mihomo, панель http://127.0.0.1:9090/ui."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

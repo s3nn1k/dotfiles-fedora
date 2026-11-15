@@ -1,32 +1,10 @@
 install_mihomo() {
-    local subscription_file="$HOME/.config/mihomo/subscription-url" subscription_url
-
     download https://github.com/MetaCubeX/mihomo/releases/download/v1.19.33/mihomo-linux-amd64-v1.19.33.gz \
         132f6f3edf9a65e62f04853aed3358472e0b2b7666daa8419edfa2ddf5bb6323 "$CACHE/mihomo.gz"
     gunzip -c "$CACHE/mihomo.gz" > "$CACHE/mihomo"
     sudo install -m 755 "$CACHE/mihomo" /usr/local/bin/mihomo
     sudo install -d -m 755 /etc/mihomo/ui /etc/mihomo/providers
-    mkdir -p "$(dirname "$subscription_file")"
-
-    if [[ ! -s "$subscription_file" ]]; then
-        if ! read -r -s -p "Подписка VPN (https-ссылка): " subscription_url; then
-            echo
-            echo "bootstrap: подписка обязательна для продолжения" >&2
-            return 1
-        fi
-        echo
-        [[ -n "$subscription_url" ]] || {
-            echo "bootstrap: подписка обязательна для продолжения" >&2
-            return 1
-        }
-        [[ "$subscription_url" == https://* ]] || {
-            echo "bootstrap: подписка должна начинаться с https://" >&2
-            return 1
-        }
-        printf '%s\n' "$subscription_url" > "$subscription_file"
-    fi
-
-    chmod 600 "$subscription_file"
+    mkdir -p "$CONFIGURATION_HOME/mihomo"
 }
 
 install_metacubexd() {
@@ -43,16 +21,22 @@ mihomo_die() {
 apply_mihomo_subscription() {
     TEMPLATE="$REPOSITORY/mihomo/config.yaml.tmpl"
     SUBSCRIPTION_FILE="$HOME/.config/mihomo/subscription-url"
+    VAULT_SUBSCRIPTION="$HOME/credentials/mihomo/subscription-url"
 
-    [[ -x /usr/local/bin/mihomo ]] || { echo "mihomo: нет подписки - сервис поднимется после setup-secrets unlock" >&2; return 0; }
-    [[ -f "$SUBSCRIPTION_FILE" ]] || { echo "mihomo: нет подписки - сервис поднимется после setup-secrets unlock" >&2; return 0; }
+    [[ -x /usr/local/bin/mihomo ]] || { echo "mihomo: подписка в vault заперта/отсутствует - поднимется после scripts/unlock-gitcrypt.sh" >&2; return 0; }
+    if [[ ! -f "$VAULT_SUBSCRIPTION" ]] || is_git_crypt_locked "$VAULT_SUBSCRIPTION"; then
+        echo "mihomo: подписка в vault заперта/отсутствует - поднимется после scripts/unlock-gitcrypt.sh" >&2
+        return 0
+    fi
+
+    cp "$VAULT_SUBSCRIPTION" "$SUBSCRIPTION_FILE"
+    chmod 600 "$SUBSCRIPTION_FILE"
 
     subscription="$(head -n 1 "$SUBSCRIPTION_FILE")"
     subscription="${subscription//[[:space:]]/}"
     [[ -n "$subscription" ]] || mihomo_die "$SUBSCRIPTION_FILE пуст"
     [[ "$subscription" == https://* ]] || mihomo_die "подписка должна начинаться с https://"
-    
-    # Экранирование спецсимволов replacement-а sed: обратный слеш, &, |
+
     subscription="${subscription//\\/\\\\}"
     subscription="${subscription//&/\\&}"
     subscription="${subscription//|/\\|}"
@@ -68,7 +52,6 @@ apply_mihomo_subscription() {
     sudo install -m 644 "$REPOSITORY/mihomo/mihomo.service" /etc/systemd/system/mihomo.service
     sudo systemctl daemon-reload
     sudo systemctl enable --now mihomo
-    # Кэш провайдера чистим: смена подписки применяется сразу
     sudo rm -f /etc/mihomo/providers/subscription.yaml
     sudo systemctl restart mihomo
 }
@@ -77,6 +60,7 @@ run_mihomo() {
     install_mihomo
     install_metacubexd
     apply_mihomo_subscription
+    [[ -f /etc/mihomo/config.yaml ]] || return 0
     sudo systemctl is-active --quiet mihomo || {
         echo "bootstrap: служба mihomo неактивна" >&2
         return 1

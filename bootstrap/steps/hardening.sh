@@ -409,7 +409,4 @@ run_hardening() {
     sudo restorecon /etc/default/grub
     sudo grub2-editenv - list | grep -q menu_auto_hide && sudo grub2-editenv - unset menu_auto_hide
     sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-
-    sudo dnf -y copr enable alternateved/keyd
-    sudo dnf install -y keyd
 }
