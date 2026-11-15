@@ -31,7 +31,7 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 - `git-crypt/repo.sh` - хелпер git-crypt-репозитория; ставится как git-crypt-repo
   (init/unlock/lock/status/key-show), git-crypt-textconv и pre-commit-hook.
 - `herdr/` - конфиг herdr и `bin/` панели (herdr-ws, herdr-agent-rename).
-- `sway/` - конфиги Sway и `swayidle-laptop.py`; `foot/`, `swaylock/`, `rofi/`, `waybar/`,
+- `sway/` - конфиги Sway; `swayidle/` - `swayidle-laptop.py`; `foot/`, `swaylock/`, `rofi/`, `waybar/`,
   `dunst/`, `gtk-3.0/`, `gtk-4.0/`, `fontconfig/` - остальной рабочий стол, всё
   раскладывается симлинками.
 - `sddm/` - тема greeter; `omp/` - промпт oh-my-posh; `wallpapers/` - обои.
