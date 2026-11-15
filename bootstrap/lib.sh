@@ -1,9 +1,8 @@
+# shellcheck shell=bash
 REPOSITORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.local/bin:$PATH"
 export GOBIN="$HOME/.local/bin"
 # shellcheck disable=SC2034
-# shellcheck shell=bash
-
 CACHE="$HOME/.cache/dotfiles-fedora"
 CONFIGURATION_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 LOCAL_BIN="$HOME/.local/bin"
