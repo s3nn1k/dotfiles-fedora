@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_projects() {
     sudo dnf install -y gcc gcc-c++ golang cmake
 

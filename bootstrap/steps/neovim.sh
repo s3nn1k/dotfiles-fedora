@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_neovim() {
     sudo dnf install -y neovim
 

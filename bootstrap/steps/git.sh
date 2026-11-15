@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 gh_auth_login() {
     local temporary_git_config login_status
     temporary_git_config="$(mktemp "${TMPDIR:-/tmp}/dotfiles-fedora-gh.XXXXXX")"

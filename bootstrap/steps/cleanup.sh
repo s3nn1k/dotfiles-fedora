@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 DRY_RUN=false
 ALL_LANGPACKS="glibc-all-langpacks"
 BLOCK_ORDER=(leftovers firmware guest-agents installer printing telemetry misc apps node24 langpacks finish)

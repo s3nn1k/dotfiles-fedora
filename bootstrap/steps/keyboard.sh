@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_keyboard() {
     clone_repository https://github.com/s3nn1k/keyd-cfqv8.git "$HOME/projects/personal/keyd-cfqv8"
 

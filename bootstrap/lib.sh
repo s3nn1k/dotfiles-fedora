@@ -1,6 +1,9 @@
 REPOSITORY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.local/bin:$PATH"
 export GOBIN="$HOME/.local/bin"
+# shellcheck disable=SC2034
+# shellcheck shell=bash
+
 CACHE="$HOME/.cache/dotfiles-fedora"
 CONFIGURATION_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 LOCAL_BIN="$HOME/.local/bin"
@@ -12,6 +15,7 @@ require_fedora() {
     }
     [[ "$EUID" != 0 ]] || { echo "bootstrap: запускай без sudo" >&2; return 1; }
     [[ -f /etc/os-release ]] || return 1
+    # shellcheck disable=SC1091
     . /etc/os-release
     [[ "$ID" == fedora && "$CONFIGURATION_HOME" == /* && -f /etc/sway/config && -f /etc/default/grub ]] || {
         echo "bootstrap: требуется установленная Fedora Sway с GRUB" >&2

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck shell=bash disable=SC2153
 # shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/../bootstrap/lib.sh"
 
@@ -71,6 +72,7 @@ main() {
         echo "unlock-gitcrypt: нет $CREDENTIALS/scripts/setup.sh; раскладка секретов пропущена (свежий vault ещё не обновлён)" >&2
     fi
 
+    # shellcheck disable=SC2153
     "$REPOSITORY/scripts/bootstrap.sh" mihomo
 
     find "$CREDENTIALS" -type d -exec chmod 700 {} +

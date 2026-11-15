@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 install_mpd_mpris() {
     local archive="$CACHE/mpd-mpris_0.4.4_linux_amd64.tar.gz"
     if [[ ! -x "$LOCAL_BIN/mpd-mpris" ]]; then

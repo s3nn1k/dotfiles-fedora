@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_shell() {
     sudo dnf install -y zsh zsh-autosuggestions zsh-syntax-highlighting
 

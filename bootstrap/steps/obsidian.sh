@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_obsidian() {
     for vault_name in personal work; do
         VAULT="$HOME/vaults/$vault_name"

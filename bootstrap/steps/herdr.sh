@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 install_herdr() {
     download https://github.com/herdrdev/herdr/releases/download/v0.9.5/herdr-linux-x86_64 \
         14d9e8bc8b4a9e0118d77c32266f76d461f09b40342eb23752960bd89f59929d "$CACHE/herdr"

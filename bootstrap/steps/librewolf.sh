@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 librewolf_installed() {
     command -v librewolf >/dev/null 2>&1
 }

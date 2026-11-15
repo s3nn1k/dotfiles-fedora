@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 install_gtk_theme() {
     gsettings set org.gnome.desktop.interface gtk-theme Gruvbox-Material-Dark
     gsettings set org.gnome.desktop.interface icon-theme Gruvbox-Material-Dark

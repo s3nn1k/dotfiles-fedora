@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 STAGING_FILE=""
 
 install_root_file_if_changed() {

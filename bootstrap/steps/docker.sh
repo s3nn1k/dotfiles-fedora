@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_docker() {
     if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then
         DOCKER_REPO_FILE="$(mktemp "${XDG_RUNTIME_DIR:-/tmp}/docker-ce.repo.XXXXXX")"

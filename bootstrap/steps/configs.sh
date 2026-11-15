@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 run_configs() {
     install_command "$REPOSITORY/swayidle/swayidle-laptop.py" swayidle-laptop
 
