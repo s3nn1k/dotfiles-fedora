@@ -64,16 +64,20 @@ link_config() {
         return 1
     }
     if [[ -L "$destination" ]]; then
-        resolved_destination="$(readlink -f "$destination")" || {
-            echo "bootstrap: $destination неразрешимая ссылка; перенеси вручную и повтори" >&2
-            return 1
-        }
-        [[ "$resolved_destination" == "$resolved_source" ]] && return
-        if [[ "$resolved_destination" == "$REPOSITORY"/* ]]; then
+        if [[ ! -e "$destination" ]]; then
             rm "$destination"
         else
-            echo "bootstrap: $destination не наш симлинк; перенеси вручную и повтори" >&2
-            return 1
+            resolved_destination="$(readlink -f "$destination")" || {
+                echo "bootstrap: $destination неразрешимая ссылка; перенеси вручную и повтори" >&2
+                return 1
+            }
+            [[ "$resolved_destination" == "$resolved_source" ]] && return
+            if [[ "$resolved_destination" == "$REPOSITORY"/* ]]; then
+                rm "$destination"
+            else
+                echo "bootstrap: $destination не наш симлинк; перенеси вручную и повтори" >&2
+                return 1
+            fi
         fi
     elif [[ -e "$destination" ]]; then
         echo "bootstrap: $destination существует; перенеси вручную и повтори" >&2
