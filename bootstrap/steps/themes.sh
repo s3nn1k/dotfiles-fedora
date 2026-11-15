@@ -13,7 +13,7 @@ install_gtk_theme() {
     cp -r "$CACHE/gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark" "$HOME/.themes/"
     cp -r "$CACHE/gruvbox-material-gtk-master/themes/Gruvbox-Material-Dark-HIDPI" "$HOME/.themes/"
     cp -r "$CACHE/gruvbox-material-gtk-master/icons/Gruvbox-Material-Dark" "$HOME/.icons/"
-    local theme_css theme_hex replacement_hex
+    local theme_css
     for theme_css in "$HOME/.themes/Gruvbox-Material-Dark"*/gtk-{3,4}.0/gtk.css; do
         sed -i \
             -e 's/#d4be98/#d4d4d4/g' \

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/../bootstrap/lib.sh"
 
 STEP_ORDER=(base mihomo hardening keyboard git nkp configs themes shell credentials obsidian projects neovim pi-agent herdr media docker librewolf cleanup)
 
 for step_file in "$(dirname "${BASH_SOURCE[0]}")"/../bootstrap/steps/*.sh; do
+    # shellcheck source=/dev/null
     source "$step_file"
 done
 
