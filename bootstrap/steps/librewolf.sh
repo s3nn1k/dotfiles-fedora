@@ -1,4 +1,6 @@
 # shellcheck shell=bash
+LIBREWOLF_CONFIG_HOME="$REPOSITORY/librewolf"
+
 librewolf_installed() {
     command -v librewolf >/dev/null 2>&1
 }
@@ -27,67 +29,35 @@ find_librewolf_profiles() {
     done
 }
 
-install_librewolf_prefs() {
-    local source="$HOME/projects/personal/librewolf-config/user.js" profiles profile
-
+install_librewolf_configs() {
+    local profiles profile
     profiles="$(find_librewolf_profiles)"
     [[ -n "$profiles" ]] || {
-        echo "bootstrap: не найден ни один профиль LibreWolf; восстанови через scripts/librewolf/profiles.sh и перезапусти" >&2
-        return 1
+        echo "bootstrap: профилей LibreWolf нет; создай их в панели браузера и перезапусти шаг" >&2
+        return 0
     }
-
     while IFS= read -r profile; do
-        link_config "$source" "$profile/user.js"
-    done <<< "$profiles"
-}
-
-install_librewolf_chrome() {
-    local source="$HOME/projects/personal/librewolf-config/chrome" profiles profile
-
-    profiles="$(find_librewolf_profiles)"
-    [[ -n "$profiles" ]] || { echo "bootstrap: не найден ни один профиль LibreWolf" >&2; return 1; }
-
-    local resolved
-    resolved="$(readlink -f "$source")"
-    while IFS= read -r profile; do
-        if [[ -L "$profile/chrome" ]]; then
-            [[ "$(readlink -f "$profile/chrome")" == "$resolved" ]] && continue
-            echo "bootstrap: $profile/chrome чужой симлинк; перенеси вручную и повтори" >&2
-            return 1
-        fi
-        if [[ -e "$profile/chrome" ]]; then
-            echo "bootstrap: $profile/chrome существует; перенеси вручную и повтори" >&2
-            return 1
-        fi
-        ln -s "$resolved" "$profile/chrome"
+        link_config "$LIBREWOLF_CONFIG_HOME/user.js" "$profile/user.js" '*/librewolf-config/*' || return 1
+        link_config "$LIBREWOLF_CONFIG_HOME/chrome" "$profile/chrome" '*/librewolf-config/*' || return 1
     done <<< "$profiles"
 }
 
 install_librewolf_policies() {
-    local source="$HOME/projects/personal/librewolf-config/policies.json"
-
-    local merged
-    merged="$(mktemp)"
-    local config_home="$HOME/projects/personal/librewolf-config"
-    python3 "$config_home/scripts/merge-policies.py" \
-        "$source" \
-        "$config_home/chrome/sidebery-sidebar.css" \
-        /usr/share/librewolf/distribution/policies.json > "$merged"
-    sudo install -D -m 644 "$merged" /usr/share/librewolf/distribution/policies.json
-    rm -f "$merged"
+    jq -e '.policies | type == "object"' "$LIBREWOLF_CONFIG_HOME/policies.json" >/dev/null || {
+        echo "bootstrap: librewolf/policies.json невалиден" >&2
+        return 1
+    }
+    sudo install -D -m 644 "$LIBREWOLF_CONFIG_HOME/policies.json" /usr/share/librewolf/distribution/policies.json
 }
 
-install_librewolf_autoconfig() {
-    local config_home="$HOME/projects/personal/librewolf-config"
-
-    sudo python3 "$config_home/scripts/install-autoconfig.py" --files
-    python3 "$config_home/scripts/install-autoconfig.py" --cache
+warn_orphaned_autoconfig() {
+    [[ -f /usr/share/librewolf/config.js || -f /usr/share/librewolf/defaults/pref/config-prefs.js ]] || return 0
+    echo "bootstrap: осиротевший autoconfig - выполни: sudo rm /usr/share/librewolf/config.js /usr/share/librewolf/defaults/pref/config-prefs.js" >&2
 }
 
 run_librewolf() {
     install_librewolf
-    install_librewolf_prefs
-    install_librewolf_chrome
+    install_librewolf_configs
     install_librewolf_policies
-    install_librewolf_autoconfig
+    warn_orphaned_autoconfig
 }

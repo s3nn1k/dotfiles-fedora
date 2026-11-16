@@ -8,7 +8,6 @@ run_projects() {
         "https://github.com/s3nn1k/nova-42|$HOME/projects/personal/nova-42"
         "https://github.com/s3nn1k/ci-cd.git|$HOME/projects/personal/ci-cd"
         "https://github.com/s3nn1k/go-service-template.git|$HOME/projects/personal/go-service-template"
-        "https://github.com/s3nn1k/librewolf-config.git|$HOME/projects/personal/librewolf-config"
     )
     for repository_entry in "${PERSONAL_REPOSITORIES[@]}"; do
         repository_url="${repository_entry%%|*}"

@@ -57,8 +57,9 @@ download() {
 }
 
 link_config() {
-    local source="$1" destination="$2" resolved_source resolved_destination
-    [[ -f "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
+    local source="$1" destination="$2" extra_allowed="${3:-}"
+    local resolved_source resolved_destination
+    [[ -f "$source" || -d "$source" ]] || { echo "bootstrap: нет источника $source" >&2; return 1; }
     resolved_source="$(readlink -f "$source")" || {
         echo "bootstrap: не удалось разрешить источник $source" >&2
         return 1
@@ -72,7 +73,9 @@ link_config() {
                 return 1
             }
             [[ "$resolved_destination" == "$resolved_source" ]] && return
-            if [[ "$resolved_destination" == "$REPOSITORY"/* ]]; then
+            # shellcheck disable=SC2053
+            if [[ "$resolved_destination" == "$REPOSITORY"/* ]] ||
+                { [[ -n "$extra_allowed" ]] && [[ "$resolved_destination" == $extra_allowed ]]; }; then
                 rm "$destination"
             else
                 echo "bootstrap: $destination не наш симлинк; перенеси вручную и повтори" >&2
