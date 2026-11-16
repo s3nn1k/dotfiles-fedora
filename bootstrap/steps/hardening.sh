@@ -11,7 +11,6 @@ install_root_file_if_changed() {
 
 apply_sysctl() {
     if install_root_file_if_changed "/etc/sysctl.d/99-hardening.conf" <<'EOF'
-# Network
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.all.accept_source_route = 0
@@ -32,14 +31,12 @@ net.ipv6.conf.all.accept_redirects = 0
 net.ipv6.conf.default.accept_redirects = 0
 net.ipv6.conf.all.accept_source_route = 0
 net.ipv6.conf.default.accept_source_route = 0
-# Kernel
 kernel.kptr_restrict = 2
 kernel.yama.ptrace_scope = 1
 kernel.perf_event_paranoid = 3
 kernel.kexec_load_disabled = 1
 kernel.sysrq = 4
 kernel.dmesg_restrict = 1
-# Filesystem
 fs.protected_fifos = 2
 fs.protected_regular = 2
 fs.suid_dumpable = 0
@@ -260,7 +257,6 @@ configure_auditd() {
         rules_replaced=true
     fi
     if install_root_file_if_changed "/etc/audit/rules.d/50-hardening.rules" <<'EOF'
-## Identity and privilege files
 -a always,exit -F arch=b64 -F path=/etc/passwd -F perm=wa -k identity
 -a always,exit -F arch=b64 -F path=/etc/shadow -F perm=wa -k identity
 -a always,exit -F arch=b64 -F path=/etc/group -F perm=wa -k identity
@@ -270,19 +266,14 @@ configure_auditd() {
 -a always,exit -F arch=b64 -F path=/etc/ssh/sshd_config -F perm=wa -k sshd_config
 -a always,exit -F arch=b64 -F dir=/etc/ssh/sshd_config.d/ -F perm=wa -k sshd_config
 -a always,exit -F arch=b64 -F dir=/etc/selinux/ -F perm=wa -k selinux_config
-## User and group management
 -a always,exit -F arch=b64 -F path=/usr/sbin/useradd -F perm=x -k user_mgmt
 -a always,exit -F arch=b64 -F path=/usr/sbin/userdel -F perm=x -k user_mgmt
 -a always,exit -F arch=b64 -F path=/usr/sbin/usermod -F perm=x -k user_mgmt
 -a always,exit -F arch=b64 -F path=/usr/bin/passwd -F perm=x -k user_mgmt
-## Time changes
 -a always,exit -F arch=b64 -S adjtimex,settimeofday,clock_settime -k time_change
-## Mounts by real users
 -a always,exit -F arch=b64 -S mount,umount2 -F auid>=1000 -F auid!=unset -k mount
-## Denied file access by real users
 -a always,exit -F arch=b64 -S openat,truncate,ftruncate -F exit=-EACCES -F auid>=1000 -F auid!=unset -k unauthed_access
 -a always,exit -F arch=b64 -S openat,truncate,ftruncate -F exit=-EPERM -F auid>=1000 -F auid!=unset -k unauthed_access
-## Kernel module load and unload
 -a always,exit -F arch=b64 -S init_module,finit_module,delete_module -k module_load
 EOF
     then

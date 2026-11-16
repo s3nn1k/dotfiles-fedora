@@ -17,10 +17,6 @@
     --lw-purple: #d3869b;
 }
 
-/* userContent.css: тёмная тема about:-страниц.
-   Расстановка: git.symlinx.net/daccfiles .config/browser_stuff (без изменений);
-   палитра: ~/.config/nvim/lua/zenbox_dark/palette.lua. */
-
 @-moz-document url-prefix("about:") {
 	body {
 		background-color: var(--lw-bg) !important;
@@ -325,8 +321,6 @@
 	.error { color: var(--lw-red) !important; background: rgba(251, 73, 52, 0.2) !important; }
 }
 
-/* PDF-просмотрщик: тот же набор дизайн-токенов, что и в хроме -
-   применяем semantic-блок из userChrome (регенерируется вместе с ним). */
 @-moz-document url-prefix("resource://pdf.js/") {
   :root, body {
   --airline-fallback-icon-color: var(--lw-fg_dim) !important;
@@ -796,7 +790,6 @@
   }
 }
 
-/* DevTools: своя тема --theme-* (variables.css) + фотон-примитивы, палитра zenbox_dark. */
 @-moz-document url-prefix("chrome://devtools/"), url-prefix("about:devtools-toolbox"), url-prefix("about:debugging") {
   :root {
   --blue-30: var(--lw-blue) !important;
@@ -919,8 +912,6 @@
   }
 }
 
-/* DevTools, добивка: токены отладчика (paused/inline-preview), сетевого монитора
-   (status-code/waterfall timing) и JSON-viewer (те же --theme-* на resource://). */
 @-moz-document url-prefix("chrome://devtools/"), url-prefix("about:devtools-toolbox"),
                url-prefix("about:debugging"), url-prefix("resource://devtools") {
   :root {
