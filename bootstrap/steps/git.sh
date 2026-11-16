@@ -15,9 +15,6 @@ gh_auth_login() {
 run_git() {
     sudo dnf install -y git git-crypt gh glab
 
-    install_command "$REPOSITORY/git-crypt/repo.sh" git-crypt-repo
-    install_command "$REPOSITORY/git-crypt/repo.sh" git-crypt-textconv
-    link_config "$LOCAL_BIN/git-crypt-repo" "$HOME/.local/share/git-crypt/hooks/pre-commit"
     link_config "$REPOSITORY/systemd/user/ssh-agent.service" "$CONFIGURATION_HOME/systemd/user/ssh-agent.service"
     systemctl --user daemon-reload
     systemctl --user enable --now ssh-agent.service

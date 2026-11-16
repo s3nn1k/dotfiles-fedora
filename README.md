@@ -15,19 +15,17 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 ```
 
 Точечный шаг: `~/dotfiles-fedora/scripts/bootstrap.sh <шаг>`; список шагов - `--list`.
-Секреты: `nkp unlock main`, затем `~/dotfiles-fedora/scripts/unlock-gitcrypt.sh` - три
-ключа, после них раскладка секретов, подписка mihomo и права применяются сами.
+Секреты: `nkp unlock main`, затем `~/dotfiles-fedora/scripts/unlock-gitcrypt.sh` - ключ
+credentials, после него раскладка секретов, подписка mihomo и права применяются сами.
 
 ## Структура
 
 - `bootstrap/` - `lib.sh` (хелперы: симлинки, загрузки по checksum, клоны, git-crypt) и
   `steps/` (19 шагов); порядок задаёт STEP_ORDER в диспетчере `scripts/bootstrap.sh`.
-- `scripts/unlock-gitcrypt.sh` - разблокировка git-crypt в `~/credentials` и
-  `~/vaults/{personal,work}` по ключам, canary-проверка, раскладка credentials, шаг
-  mihomo.
+- `scripts/unlock-gitcrypt.sh` - разблокировка git-crypt в `~/credentials`
+  (машинерия - `~/credentials/scripts/git-crypt-repo.sh`), canary-проверка, раскладка
+  credentials, шаг mihomo.
 - `scripts/librewolf/profiles.sh` - перенос закладок LibreWolf между машинами.
-- `git-crypt/repo.sh` - хелпер git-crypt-репозитория; ставится как git-crypt-repo
-  (init/unlock/lock/status/key-show), git-crypt-textconv и pre-commit-hook.
 - `herdr/` - конфиг herdr и `bin/` панели (herdr-ws, herdr-agent-rename).
 - `sway/` - конфиги Sway; `swayidle/` - `swayidle-laptop.py`; `foot/`, `swaylock/`, `rofi/`, `waybar/`,
   `dunst/`, `gtk-3.0/`, `gtk-4.0/`, `fontconfig/` - остальной рабочий стол, всё
