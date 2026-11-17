@@ -1,5 +1,6 @@
 source "$HOME/.zprofile"
 export PATH="$HOME/go/bin:$PATH"
+export QT_QPA_PLATFORMTHEME=gtk3
 [ -f "$HOME/credentials/ssh/wrapper.zsh" ] && source "$HOME/credentials/ssh/wrapper.zsh"
 eval "$(oh-my-posh init zsh --config "${XDG_CONFIG_HOME:-$HOME/.config}/omp/prompt.omp.json")"
 autoload -Uz compinit
