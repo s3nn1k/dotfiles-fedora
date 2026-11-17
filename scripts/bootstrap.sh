@@ -49,7 +49,6 @@ main() {
         return 0
     fi
     printf '%s\n' "Готово. Выйди из сессии и войди снова для zsh и группы docker." \
-        "Секреты: nkp unlock main, затем scripts/unlock-gitcrypt.sh (ключ credentials) - раскладка, mihomo и права сами." \
         "LibreWolf: профили создай в панели браузера и перезапусти scripts/bootstrap.sh librewolf (user.js, тема и политики лягут в каждый профиль); закладки - Ctrl+Shift+O -> Export Bookmarks to HTML в ~/credentials/librewolf/bookmarks.<профиль>.html, на другой машине - Import Bookmarks from HTML того же файла." \
         "VPN: смена подписки - ~/credentials/mihomo/subscription-url + scripts/bootstrap.sh mihomo, панель http://127.0.0.1:9090/ui."
 }
