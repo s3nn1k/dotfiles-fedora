@@ -15,7 +15,7 @@ run_configs() {
         waybar/config.jsonc waybar/style.css waybar/lang.sh waybar/mihomo-status.sh \
         dunst/dunstrc \
         gtk-3.0/settings.ini gtk-3.0/gtk.css gtk-4.0/settings.ini gtk-4.0/gtk.css fontconfig/fonts.conf \
-        mpd/mpd.conf rmpc/config.ron environment.d/qt-theme.conf; do
+        environment.d/qt-theme.conf; do
         link_config "$REPOSITORY/$name" "$CONFIGURATION_HOME/$name"
     done
     link_config "$REPOSITORY/zshrc" "$HOME/.zshrc"
