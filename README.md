@@ -16,6 +16,7 @@ git clone https://github.com/s3nn1k/dotfiles-fedora.git ~/dotfiles-fedora
 
 Точечный шаг: `~/dotfiles-fedora/scripts/bootstrap.sh <шаг>`; список шагов - `--list`.
 Секреты: `~/dotfiles-fedora/scripts/unlock-gitcrypt.sh` - ключ credentials, после него
+раскладка секретов, подписка mihomo и права применяются сами.
 
 ## Структура
 
